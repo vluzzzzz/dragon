@@ -90,6 +90,7 @@ window.scrollTo(0, 0);
             // scroll) para que el scroll horizontal no se complete de un solo
             // flick y se sienta mas largo/controlado. En PC se mantiene igual.
             var _envEnd = function () { return _isMob ? '+=' + Math.round(window.innerHeight * 2.5) : 'bottom top'; };
+            var _envST = null;
             if (_env2) {
               gsap.set('#productos', { y: 0 });
               gsap.to('#productos', {
@@ -108,7 +109,7 @@ window.scrollTo(0, 0);
               // invalidateOnRefresh la recalcule (clave en movil: la medida
               // inicial dentro del loader puede estar mal).
               var _getDx = function () { return Math.max(0, _eh.offsetWidth - window.innerWidth); };
-              gsap.to(_eh, {
+              var _envTween = gsap.to(_eh, {
                 x: function () { return -_getDx(); },
                 ease: 'none',
                 scrollTrigger: {
@@ -122,6 +123,7 @@ window.scrollTo(0, 0);
                   invalidateOnRefresh: true
                 }
               });
+              _envST = _envTween.scrollTrigger;
               var _df = document.querySelector('.envio-fondo');
               if (_df) {
                 gsap.set(_df, { x: 0 });
@@ -166,6 +168,38 @@ window.scrollTo(0, 0);
                 }
               });
             }
+
+            // Snap nativo de Lenis (solo movil): al soltar el dedo, desliza
+            // suave a la seccion mas cercana usando el motor de Lenis. No se
+            // pelea con el scroll suave (por eso no se congela como el snap de
+            // ScrollTrigger), y NO actua dentro del scroll horizontal del envio.
+            if (_isMob && s1._l) {
+              var _snapping = false, _snapTimer = null;
+              var _snapEase = function (t) { return 1 - Math.pow(1 - t, 3); };
+              var _doSnap = function () {
+                if (_snapping || !s1._l) return;
+                var y = window.scrollY || window.pageYOffset || 0;
+                var aProd = s3._st ? s3._st.end : null;   // fin del shrink del hero = productos
+                var aEnv = _envST ? _envST.start : null;  // entrada del envio (antes del scroll horizontal)
+                if (aEnv != null && y > aEnv + 12) return; // dentro del envio: scroll horizontal libre
+                var anchors = [0];
+                if (aProd != null) anchors.push(aProd);
+                if (aEnv != null) anchors.push(aEnv);
+                var target = null, best = Infinity;
+                anchors.forEach(function (a) { var d = Math.abs(a - y); if (d < best) { best = d; target = a; } });
+                if (target == null) return;
+                // ya estamos ahi, o demasiado lejos (se detuvo a mirar a proposito): no forzar
+                if (best < 6 || best > window.innerHeight * 0.45) return;
+                _snapping = true;
+                s1._l.scrollTo(target, { duration: 0.5, easing: _snapEase, onComplete: function () { _snapping = false; } });
+              };
+              s1._l.on('scroll', function () {
+                if (_snapping) return;
+                if (_snapTimer) clearTimeout(_snapTimer);
+                _snapTimer = setTimeout(_doSnap, 150);
+              });
+            }
+
             ScrollTrigger.refresh();
             setTimeout(function () { ScrollTrigger.refresh(true); }, 400);
           }
