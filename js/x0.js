@@ -85,6 +85,11 @@ window.scrollTo(0, 0);
             if (s1._l) { s1._l.start(); s1._l.scrollTo(0, { immediate: true }); }
             var _env2 = document.querySelector('.envio-section');
             var _eh = document.querySelector('.envio-horiz');
+            var _isMob = window.matchMedia('(max-width: 768px)').matches;
+            // En movil alargamos el recorrido del envio (~2.5 pantallas de
+            // scroll) para que el scroll horizontal no se complete de un solo
+            // flick y se sienta mas largo/controlado. En PC se mantiene igual.
+            var _envEnd = function () { return _isMob ? '+=' + Math.round(window.innerHeight * 2.5) : 'bottom top'; };
             if (_env2) {
               gsap.set('#productos', { y: 0 });
               gsap.to('#productos', {
@@ -109,7 +114,7 @@ window.scrollTo(0, 0);
                 scrollTrigger: {
                   trigger: '.envio-section',
                   start: 'top top',
-                  end: 'bottom top',
+                  end: _envEnd,
                   pin: '.envio-section',
                   pinSpacing: true,
                   anticipatePin: 1,
@@ -126,7 +131,7 @@ window.scrollTo(0, 0);
                   scrollTrigger: {
                     trigger: '.envio-section',
                     start: 'top top',
-                    end: 'bottom top',
+                    end: _envEnd,
                     scrub: 1,
                     invalidateOnRefresh: true
                   }
@@ -141,7 +146,7 @@ window.scrollTo(0, 0);
                 scrollTrigger: {
                   trigger: '.envio-section',
                   start: 'top top',
-                  end: 'bottom top',
+                  end: _envEnd,
                   scrub: 1,
                   invalidateOnRefresh: true
                 }
@@ -155,7 +160,7 @@ window.scrollTo(0, 0);
                 scrollTrigger: {
                   trigger: '.envio-section',
                   start: 'top top',
-                  end: 'bottom top',
+                  end: _envEnd,
                   scrub: 1,
                   invalidateOnRefresh: true
                 }
