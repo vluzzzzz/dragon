@@ -1,0 +1,14 @@
+{
+  "name": "dune-dragon",
+  "scripts": {
+    "dev": "npx serve . --cors -p 3456 --no-clipboard"
+  },
+  "dependencies": {
+    "mercadopago": "^2.2.0",
+    "posthog-node": "^5.36.7",
+    "resend": "^4.5.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
+  }
+}

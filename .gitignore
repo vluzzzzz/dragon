@@ -1,0 +1,23 @@
+node_modules/
+.env
+*.psd
+backup_*/
+*_backup.*
+index_backup.html
+style_backup.css
+Nueva carpeta/
+
+# Datos del asistente / herramientas (no son parte del sitio)
+.opencode/
+.claude/
+.vscode/
+
+# Archivos fuente de diseño (no usados por el sitio en vivo)
+layers/
+
+# Notas personales (no necesarias para el deploy)
+/animacion bucle.md
+/catologo y un poco de indicaciones.txt
+
+# Pagina de referencia (no es el sitio)
+pagina referencia/
