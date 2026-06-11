@@ -10,6 +10,18 @@ export function initLogo3D() {
   var W = wrap.clientWidth || 400;
   var H = 550;
 
+  // Render solo cuando el canvas esta en pantalla. El logo vive en la seccion
+  // de ventajas (oculta casi siempre), asi que sin esto renderiza WebGL en cada
+  // frame de gusto y traba el scroll en movil.
+  var _visible = false;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      _visible = entries[0].isIntersecting;
+    }, { threshold: 0.01 }).observe(canvas);
+  } else {
+    _visible = true;
+  }
+
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
   renderer.setSize(W, H);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -96,6 +108,8 @@ export function initLogo3D() {
 
   function animate() {
     requestAnimationFrame(animate);
+
+    if (!_visible) return;
 
     smoothRotY += (windX * LOGO_ROT_Y - smoothRotY) * 0.12;
     smoothRotX += (-windY * LOGO_ROT_X - smoothRotX) * 0.12;
