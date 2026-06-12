@@ -1671,7 +1671,7 @@ nav.no-glass {
 
   .cart-drawer { width: 100% !important; max-width: 100% !important; }
 
-  .envio-item-catalogo { --cat-w: 435px; --cat-x: 220px; --cat-y: -150px; --btn-w: 130px; --btn-x: 0px; --btn-y: 0px; --btn-scale: 1; --btn-radius: 12px; }
+  .envio-item-catalogo { --cat-w: 435px; --cat-x: 220px; --cat-y: -150px; --btn-w: 110px; --btn-x: 230px; --btn-y: -84px; --btn-scale: 1.2; --btn-radius: 12px; }
   .catalogo-img { position: absolute; top: 50%; left: 50%; width: var(--cat-w, 250px); height: auto; transform: translate(calc(-50% + var(--cat-x, 0px)), calc(-50% + var(--cat-y, 0px))); pointer-events: none; }
   .catalogo-btn { margin-top: 120px; font-size: 16px; padding: 8px 0; }
 

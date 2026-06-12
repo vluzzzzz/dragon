@@ -132,7 +132,7 @@ window.scrollTo(0, 0);
               if (_df) {
                 gsap.set(_df, { x: 0 });
                 gsap.to(_df, {
-                  x: function () { return -_getDx() * 0.12; },
+                  x: function () { return -_getDx() * 0.5; },
                   ease: 'none',
                   scrollTrigger: {
                     trigger: '.envio-section',
@@ -146,9 +146,8 @@ window.scrollTo(0, 0);
             }
             var _ec = document.getElementById('envioCarroWrap');
             if (_ec) {
-              gsap.set(_ec, { left: '20vw' });
-              gsap.to(_ec, {
-                left: '80vw',
+              gsap.set(_ec, { left: '12vw' });
+              var _carTl = gsap.timeline({
                 scrollTrigger: {
                   trigger: '.envio-section',
                   start: 'top top',
@@ -157,6 +156,12 @@ window.scrollTo(0, 0);
                   invalidateOnRefresh: true
                 }
               });
+              // Efecto "cinta de correr": el carro entra desde la izquierda y se
+              // queda en el centro; mientras el fondo y los textos siguen pasando
+              // y las ruedas giran, parece que avanza aunque este quieto.
+              // >>> PERILLA: el 0.28 = cuanto del scroll usa para llegar al centro.
+              _carTl.fromTo(_ec, { left: '12vw' }, { left: '50vw', ease: 'power2.out', duration: 0.28 });
+              _carTl.to({}, { duration: 0.72 });
             }
             var _rw = document.querySelectorAll('.rueda');
             if (_rw.length) {
