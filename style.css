@@ -352,11 +352,13 @@ nav.no-glass {
 
 .nubes-ticker {
   position: absolute;
-  top: 0;
+  top: var(--nubes-y, 0px);
   left: 0;
   width: 100%;
   height: 0;
-  padding-bottom: 17.4%;
+  padding-bottom: var(--nubes-h, 17.4%);
+  transform: scale(var(--nubes-scale, 1));
+  transform-origin: top center;
   z-index: 5;
   pointer-events: none;
   overflow: hidden;
@@ -1593,9 +1595,33 @@ nav.no-glass {
     --left-w: 160px;    --left-x: -195px;   --left-y: 20px;   --left-op: 0.55;
     --center-w: 210px;  --center-x: 0px;    --center-y: 30px;
     --right-w: 160px;   --right-x: 175px;   --right-y: 20px;  --right-op: 0.55;
-    --carro-scale: 2.5;
-    --carro-y: 100px;
-    --ri-s: 18px;  --rd-s: 18px;
+
+    /* ════════ PANEL DE CONTROL MOVIL — ajustar X / Y / escala aca ════════ */
+
+    /* OJOS del dragon (hero) */
+    --ojos-x: -8px;       /* horizontal: izquierda(-) / derecha(+) */
+    --ojos-y: -37px;      /* vertical: arriba(-) / abajo(+) */
+    --ojos-w: 20;         /* ancho (numero relativo, mas grande = mas ancho) */
+    --ojos-h: 23;         /* alto (numero relativo) */
+
+    /* NUBES (productos destacados) */
+    --nubes-y: 0px;       /* vertical: arriba(-) / abajo(+) */
+    --nubes-h: 17.4%;     /* tamano de la franja (mas % = mas alta) */
+    --nubes-scale: 1;     /* escala (1 = normal, 1.5 = mas grande) */
+
+    /* RUEDA IZQUIERDA (envio) */
+    --ri-x: 11.2px;       /* horizontal */
+    --ri-y: 5%;           /* vertical */
+    --ri-s: 18px;         /* tamano */
+
+    /* RUEDA DERECHA (envio) */
+    --rd-x: 14.3px;       /* horizontal */
+    --rd-y: 5px;          /* vertical */
+    --rd-s: 18px;         /* tamano */
+
+    /* CARRO / AUTO (envio) — la X (recorrido) se ajusta en js/x0.js */
+    --carro-y: 100px;     /* vertical: arriba(-) / abajo(+) */
+    --carro-scale: 2.2;   /* tamano */
   }
 
   .sticky-outer { height: 120vh; }
@@ -1630,7 +1656,7 @@ nav.no-glass {
   .envio-section { height: 100vh; }
   .envio-horiz { width: calc(3 * 105vw); }
   .envio-item h2 { font-size: clamp(42px, 14vw, 150px); }
-  .envio-carro-wrap { --carro-scale: 2.2; }
+  /* (--carro-scale ahora se controla desde el PANEL DE CONTROL de arriba) */
   .envio-img { height: 50px; }
   .envio-item-logo { position: relative; --logo-w: 400px; --logo-x: 0px; --logo-y: 0px; }
   .envio-logo-img { position: absolute; top: 50%; left: 50%; width: var(--logo-w, 400px); height: auto; transform: translate(calc(-50% + var(--logo-x, 0px)), calc(-50% + var(--logo-y, 0px))); pointer-events: none; }
