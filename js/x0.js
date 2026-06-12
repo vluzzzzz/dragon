@@ -166,7 +166,7 @@ window.scrollTo(0, 0);
             if (_rw.length) {
               gsap.set(_rw, { rotation: 0 });
               gsap.to(_rw, {
-                rotation: 3600,
+                rotation: 1080,
                 scrollTrigger: {
                   trigger: '.envio-section',
                   start: 'top top',
@@ -176,6 +176,57 @@ window.scrollTo(0, 0);
                 }
               });
             }
+
+            // ── Navegacion por gestos (solo movil): un dezlise = una seccion
+            //    (hero -> productos -> envio). Al llegar al envio: scroll libre.
+            //    Ultra liviano: solo touchstart/touchend PASIVOS, sin trabajo
+            //    por frame ni preventDefault. Apto para celulares de gama baja.
+            (function _gestureSnap() {
+              if (window.innerWidth > 768) return;
+              var animating = false, sx = 0, sy = 0;
+              function anchors() {
+                var prod = s3._st ? s3._st.end : window.innerHeight;
+                var env = prod + window.innerHeight;
+                var all = ScrollTrigger.getAll();
+                for (var i = 0; i < all.length; i++) {
+                  var t = all[i];
+                  if (t.pin && t.pin.classList && t.pin.classList.contains('envio-section')) { env = t.start; break; }
+                }
+                return [0, Math.round(prod), Math.round(env)];
+              }
+              function blocked() {
+                if (_catOpen || _ventajasOpen) return true;
+                var pp = document.getElementById('ppage');
+                return !!(pp && pp.style.display !== 'none' && getComputedStyle(pp).display !== 'none');
+              }
+              function go(dir, A) {
+                if (animating || !s1._l) return;
+                var y = window.scrollY || 0;
+                if (y >= A[2] - 6) return; // en/pasando el envio -> scroll libre
+                var bi = 0, bd = Infinity;
+                for (var i = 0; i < 3; i++) { var d = Math.abs(A[i] - y); if (d < bd) { bd = d; bi = i; } }
+                var ni = bi + dir;
+                if (ni < 0 || ni > 2) return;
+                animating = true;
+                s1._l.scrollTo(A[ni], {
+                  duration: 0.8, lock: true, force: true,
+                  easing: function (t) { return 1 - Math.pow(1 - t, 3); },
+                  onComplete: function () { animating = false; }
+                });
+              }
+              window.addEventListener('touchstart', function (e) {
+                sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+              }, { passive: true });
+              window.addEventListener('touchend', function (e) {
+                if (animating || blocked()) return;
+                var A = anchors();
+                if ((window.scrollY || 0) >= A[2] - 6) return;
+                var dx = sx - e.changedTouches[0].clientX;
+                var dy = sy - e.changedTouches[0].clientY;
+                if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) return; // ignora horizontales (carrusel)
+                go(dy > 0 ? 1 : -1, A);
+              }, { passive: true });
+            })();
 
             ScrollTrigger.refresh();
             setTimeout(function () { ScrollTrigger.refresh(true); }, 400);
