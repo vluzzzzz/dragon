@@ -1587,6 +1587,12 @@ nav.no-glass {
      (no rompe sticky ni pins). Scopeado a movil para no afectar PC. */
   html, body { overflow-x: clip; }
 
+  /* CLAVE celu real: evita que Chrome inicie scroll nativo por su cuenta
+     (carrera que ignora preventDefault en telefonos reales, no en DevTools).
+     Todo el scroll de la pagina lo maneja Lenis/SnapNav; los overlays
+     (carrito, producto, catalogo, checkout) conservan su scroll nativo. */
+  .hero-section, .sticky, nav, .productos-section, .envio-section { touch-action: none; }
+
   body { overscroll-behavior: none; }
 
   :root {

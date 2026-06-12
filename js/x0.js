@@ -90,19 +90,23 @@ var SnapNav = (function () {
     if (!frozen || skipTouch) return;
     if (e.cancelable) e.preventDefault();
   }
-  function onTouchEnd(e) {
+  function handleEnd(e, tag) {
     if (!e.changedTouches || !e.changedTouches[0]) return;
     var dx = sx - e.changedTouches[0].clientX;
     var dy = sy - e.changedTouches[0].clientY;
-    if (!frozen) { _last = 'te dy=' + Math.round(dy) + ' libre'; return; }
-    if (animating) { _last = 'te (animando)'; return; }
-    if (skipTouch) { _last = 'te (overlay)'; return; }
-    if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) { _last = 'te dy=' + Math.round(dy) + ' corto/horiz'; return; } // ignora horizontales (carrusel)
+    if (!frozen) { _last = tag + ' dy=' + Math.round(dy) + ' libre'; return; }
+    if (animating) { _last = tag + ' (animando)'; return; }
+    if (skipTouch) { _last = tag + ' (overlay)'; return; }
+    if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) { _last = tag + ' dy=' + Math.round(dy) + ' corto/horiz'; return; } // ignora horizontales (carrusel)
     var ni = startIdx + (dy > 0 ? 1 : -1);
-    if (ni < 0 || ni > 2 || ni === startIdx) { _last = 'te dy=' + Math.round(dy) + ' borde'; return; }
-    _last = 'te dy=' + Math.round(dy) + ' goTo(' + ni + ')';
+    if (ni < 0 || ni > 2 || ni === startIdx) { _last = tag + ' dy=' + Math.round(dy) + ' borde'; return; }
+    _last = tag + ' dy=' + Math.round(dy) + ' goTo(' + ni + ')';
     goTo(ni);
   }
+  function onTouchEnd(e) { handleEnd(e, 'te'); }
+  // En celus reales el navegador puede "robar" el gesto y disparar touchcancel
+  // en vez de touchend: lo procesamos igual para no perder el dezlise.
+  function onTouchCancel(e) { handleEnd(e, 'tc'); }
   // Volver desde el envio hacia arriba: cuando el scroll libre se asienta
   // por encima del ancla del envio, re-engancha al ancla mas cercana.
   function onScroll() {
@@ -138,6 +142,7 @@ var SnapNav = (function () {
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', onTouchCancel, { passive: true });
     attach(s1._l);
     freeze();
   }
@@ -152,19 +157,27 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-// ── Version del build (bumpear en cada deploy) — visible en la barra ?debug
-var BUILD = '2026-06-12-1';
+// ── Version del build (bumpear en cada deploy) — visible en la barra de debug
+var BUILD = '2026-06-12-2';
 
-// ── Barra de debug EN PANTALLA (?debug en la URL): version, scroll en vivo,
-//    estado del snap, ultimo gesto y errores JS. Para diagnosticar en celu real.
+// ── Barra de debug EN PANTALLA: version, scroll en vivo, estado del snap,
+//    contadores de eventos touch, ultimo gesto y errores JS.
+//    TEMPORAL: visible SIEMPRE en movil mientras cazamos el bug (tambien se
+//    puede forzar con ?debug). Cuando este resuelto, dejar solo ?debug.
 (function _debugBar() {
-  if ((location.search + location.hash).indexOf('debug') === -1) return;
+  var force = (location.search + location.hash).indexOf('debug') !== -1;
+  if (!force && window.innerWidth > 768) return;
   var bar = document.createElement('div');
   bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'
     + 'background:rgba(0,0,0,.85);color:#4ade80;font:11px/1.5 monospace;'
     + 'padding:6px 9px;pointer-events:none;white-space:pre-wrap;word-break:break-all;';
   document.body.appendChild(bar);
   var lastErr = '';
+  var cnt = { ts: 0, tm: 0, te: 0, tc: 0 };
+  window.addEventListener('touchstart', function () { cnt.ts++; }, { passive: true });
+  window.addEventListener('touchmove', function () { cnt.tm++; }, { passive: true });
+  window.addEventListener('touchend', function () { cnt.te++; }, { passive: true });
+  window.addEventListener('touchcancel', function () { cnt.tc++; }, { passive: true });
   window.addEventListener('error', function (e) {
     lastErr = (e.message || 'error') + ' @' + ((e.filename || '').split('/').pop() || '?') + ':' + (e.lineno || '?');
   });
@@ -178,7 +191,8 @@ var BUILD = '2026-06-12-1';
       'BUILD ' + BUILD + ' | y=' + Math.round(window.scrollY) + ' | st=' + st
       + ' | vw=' + window.innerWidth + ' vh=' + window.innerHeight
       + ' | A=[' + A.join(',') + ']'
-      + '\n' + (SnapNav.lastInfo() || '(sin gestos aun)')
+      + '\nev ts:' + cnt.ts + ' tm:' + cnt.tm + ' te:' + cnt.te + ' tc:' + cnt.tc
+      + ' | ' + (SnapNav.lastInfo() || '(sin gestos aun)')
       + (lastErr ? '\nERR: ' + lastErr : '');
   }
   setInterval(paint, 300);
