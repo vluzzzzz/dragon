@@ -3,8 +3,14 @@
    Mueve elementos cambiando sus variables CSS en tiempo real.
    Arrastrable desde la cabecera. Boton "Copiar CSS" para pegar los valores. */
 export function initDevControls() {
+  // Aparece SIEMPRE en local (localhost / 127.0.0.1 / file:// / red LAN) para
+  // desarrollar comodo, y en produccion (Vercel) solo si la URL trae ?dev.
+  var host = window.location.hostname;
+  var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '' ||
+                host.indexOf('192.168.') === 0 || host.indexOf('10.') === 0;
   var q = window.location.search + window.location.hash;
-  if (!/(?:[?#&]|^)dev\b/.test(q) && q.indexOf('dev') === -1) return;
+  var hasDev = /(?:[?#&]|^)dev\b/.test(q) || q.indexOf('dev') !== -1;
+  if (!isLocal && !hasDev) return;
 
   var ROOT = document.documentElement;
 
