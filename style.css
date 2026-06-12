@@ -1610,18 +1610,18 @@ nav.no-glass {
     --nubes-scale: 2;     /* escala (1 = normal, 1.5 = mas grande) */
 
     /* RUEDA IZQUIERDA (envio) */
-    --ri-x: 11.2px;       /* horizontal */
-    --ri-y: 5%;           /* vertical */
-    --ri-s: 18px;         /* tamano */
+    --ri-x: 5px;          /* horizontal */
+    --ri-y: 4%;           /* vertical */
+    --ri-s: 15px;         /* tamano */
 
     /* RUEDA DERECHA (envio) */
-    --rd-x: -9px;       /* horizontal */
-    --rd-y: 1px;          /* vertical */
-    --rd-s: 18px;         /* tamano */
+    --rd-x: 6.5px;        /* horizontal */
+    --rd-y: 2px;          /* vertical */
+    --rd-s: 15px;         /* tamano */
 
     /* CARRO / AUTO (envio) — la X (recorrido) se ajusta en js/x0.js */
-    --carro-y: 100px;     /* vertical: arriba(-) / abajo(+) */
-    --carro-scale: 5.4;   /* tamano */
+    --carro-y: 137px;     /* vertical: arriba(-) / abajo(+) */
+    --carro-scale: 5.65;  /* tamano */
   }
 
   .sticky-outer { height: 120vh; }
@@ -1658,9 +1658,9 @@ nav.no-glass {
   .envio-item h2 { font-size: clamp(42px, 14vw, 150px); }
   /* (--carro-scale ahora se controla desde el PANEL DE CONTROL de arriba) */
   .envio-img { height: 50px; }
-  .envio-item-logo { position: relative; --logo-w: 400px; --logo-x: 0px; --logo-y: 0px; }
+  .envio-item-logo { position: relative; --logo-w: 400px; --logo-x: 0px; --logo-y: -114px; }
   .envio-logo-img { position: absolute; top: 50%; left: 50%; width: var(--logo-w, 400px); height: auto; transform: translate(calc(-50% + var(--logo-x, 0px)), calc(-50% + var(--logo-y, 0px))); pointer-events: none; }
-  .envio-item-img { position: relative; --img2-w: 200px; --img2-x: 0px; --img2-y: 0px; }
+  .envio-item-img { position: relative; --img2-w: 675px; --img2-x: 0px; --img2-y: -114px; }
   .envio-item-img-tag { position: absolute; top: 50%; left: 50%; width: var(--img2-w, 200px); height: auto; transform: translate(calc(-50% + var(--img2-x, 0px)), calc(-50% + var(--img2-y, 0px))); pointer-events: none; }
 
   .intro-ticker-track span,
