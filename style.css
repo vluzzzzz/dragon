@@ -1572,7 +1572,7 @@ nav.no-glass {
     --rd-y: 2px;          /* vertical */
     --rd-s: 15px;         /* tamano */
 
-    --carro-y: 137px;     /* vertical: arriba(-) / abajo(+) */
+    --carro-y: 197px;
     --carro-scale: 5.65;  /* tamano */
   }
 
