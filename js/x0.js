@@ -39,6 +39,7 @@ window.__DEV__ = _DEV;
 var SnapNav = (function () {
   var enabled = false, frozen = false, animating = false;
   var sx = 0, sy = 0, startIdx = 0, skipTouch = false, settleTimer = null;
+  var _last = ''; // ultimo gesto/decision, para la barra de debug (?debug)
 
   // Anclas medidas por el usuario (vh=932: productos=740, envio=1387),
   // relativas al alto de pantalla. >>> PERILLAS: estos 2 factores <<<
@@ -71,6 +72,7 @@ var SnapNav = (function () {
       onComplete: function () {
         animating = false;
         if (idx >= 2) release(); else freeze();
+        _last += ' land=' + Math.round(window.scrollY);
       }
     });
   }
@@ -82,19 +84,23 @@ var SnapNav = (function () {
     // estados bloqueados se deciden UNA vez por toque (barato en touchmove).
     skipTouch = blocked() || !!(e.target && e.target.closest && e.target.closest('[data-lenis-prevent],#devPanel'));
     startIdx = idxAt(window.scrollY || 0, anchors());
+    _last = 'ts idx=' + startIdx + (skipTouch ? ' (overlay)' : '');
   }
   function onTouchMove(e) {
     if (!frozen || skipTouch) return;
     if (e.cancelable) e.preventDefault();
   }
   function onTouchEnd(e) {
-    if (!frozen || animating || skipTouch) return;
     if (!e.changedTouches || !e.changedTouches[0]) return;
     var dx = sx - e.changedTouches[0].clientX;
     var dy = sy - e.changedTouches[0].clientY;
-    if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) return; // ignora horizontales (carrusel)
+    if (!frozen) { _last = 'te dy=' + Math.round(dy) + ' libre'; return; }
+    if (animating) { _last = 'te (animando)'; return; }
+    if (skipTouch) { _last = 'te (overlay)'; return; }
+    if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) { _last = 'te dy=' + Math.round(dy) + ' corto/horiz'; return; } // ignora horizontales (carrusel)
     var ni = startIdx + (dy > 0 ? 1 : -1);
-    if (ni < 0 || ni > 2 || ni === startIdx) return;
+    if (ni < 0 || ni > 2 || ni === startIdx) { _last = 'te dy=' + Math.round(dy) + ' borde'; return; }
+    _last = 'te dy=' + Math.round(dy) + ' goTo(' + ni + ')';
     goTo(ni);
   }
   // Volver desde el envio hacia arriba: cuando el scroll libre se asienta
@@ -109,6 +115,7 @@ var SnapNav = (function () {
       var y2 = window.scrollY || 0;
       var A = anchors();
       if (y2 >= A[2] - 20) return;
+      _last = 'reengage y=' + Math.round(y2) + ' goTo(' + idxAt(y2, A) + ')';
       goTo(idxAt(y2, A));
     }, 160);
   }
@@ -136,11 +143,94 @@ var SnapNav = (function () {
   }
   return {
     init: init, attach: attach, goTo: goTo, release: release, reengage: reengage,
+    anchors: anchors,
     active: function () { return enabled; },
-    isFrozen: function () { return frozen; }
+    isFrozen: function () { return frozen; },
+    isAnimating: function () { return animating; },
+    lastInfo: function () { return _last; }
   };
 })();
 window.__SnapNav = SnapNav;
+
+// ── Version del build (bumpear en cada deploy) — visible en la barra ?debug
+var BUILD = '2026-06-12-1';
+
+// ── Barra de debug EN PANTALLA (?debug en la URL): version, scroll en vivo,
+//    estado del snap, ultimo gesto y errores JS. Para diagnosticar en celu real.
+(function _debugBar() {
+  if ((location.search + location.hash).indexOf('debug') === -1) return;
+  var bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'
+    + 'background:rgba(0,0,0,.85);color:#4ade80;font:11px/1.5 monospace;'
+    + 'padding:6px 9px;pointer-events:none;white-space:pre-wrap;word-break:break-all;';
+  document.body.appendChild(bar);
+  var lastErr = '';
+  window.addEventListener('error', function (e) {
+    lastErr = (e.message || 'error') + ' @' + ((e.filename || '').split('/').pop() || '?') + ':' + (e.lineno || '?');
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    lastErr = 'promise: ' + ((e.reason && e.reason.message) || e.reason || '?');
+  });
+  function paint() {
+    var A = SnapNav.anchors();
+    var st = !SnapNav.active() ? 'OFF' : (SnapNav.isAnimating() ? 'ANIM' : (SnapNav.isFrozen() ? 'FROZEN' : 'FREE'));
+    bar.textContent =
+      'BUILD ' + BUILD + ' | y=' + Math.round(window.scrollY) + ' | st=' + st
+      + ' | vw=' + window.innerWidth + ' vh=' + window.innerHeight
+      + ' | A=[' + A.join(',') + ']'
+      + '\n' + (SnapNav.lastInfo() || '(sin gestos aun)')
+      + (lastErr ? '\nERR: ' + lastErr : '');
+  }
+  setInterval(paint, 300);
+  window.addEventListener('touchend', function () { setTimeout(paint, 60); setTimeout(paint, 950); }, { passive: true });
+  paint();
+})();
+
+// ── Flechas "bajar" (solo movil): navegacion por TAP, garantizada aunque
+//    los gestos fallen. Hero -> productos (reusa #cta) y productos -> envio.
+(function _downArrows() {
+  if (window.innerWidth > 768) return;
+  function go(i) {
+    if (SnapNav.active()) { SnapNav.goTo(i); return; }
+    var A = SnapNav.anchors();
+    if (s1._l) s1._l.scrollTo(A[i], { duration: 0.8, force: true });
+    else window.scrollTo({ top: A[i], behavior: 'smooth' });
+  }
+  var cta = document.getElementById('cta');
+  if (cta) {
+    cta.style.pointerEvents = 'auto';
+    cta.style.cursor = 'pointer';
+    cta.addEventListener('click', function () {
+      if (cta.style.opacity === '0') return; // oculto fuera del hero
+      go(1);
+    });
+  }
+  var arrow = document.createElement('button');
+  arrow.className = 'section-next';
+  arrow.setAttribute('aria-label', 'Bajar a envios');
+  arrow.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;display:block"><path d="M12 5v14M7 15l5 5 5-5"/></svg>';
+  arrow.style.cssText = 'position:absolute;left:50%;z-index:40;width:46px;height:46px;'
+    + 'margin-left:-23px;border-radius:50%;border:1px solid rgba(0,0,0,.12);'
+    + 'background:rgba(255,255,255,.9);color:#111;display:flex;align-items:center;'
+    + 'justify-content:center;cursor:pointer;transition:opacity .3s;'
+    + '-webkit-tap-highlight-color:transparent;box-shadow:0 4px 14px rgba(0,0,0,.12);';
+  document.body.appendChild(arrow);
+  function place() {
+    var A = SnapNav.anchors();
+    arrow.style.top = (A[1] + window.innerHeight - 76) + 'px';
+  }
+  function visible() {
+    var A = SnapNav.anchors();
+    var y = window.scrollY || 0;
+    var on = Math.abs(y - A[1]) < window.innerHeight * 0.45;
+    arrow.style.opacity = on ? '1' : '0';
+    arrow.style.pointerEvents = on ? 'auto' : 'none';
+  }
+  place(); visible();
+  window.addEventListener('resize', function () { place(); visible(); });
+  setInterval(visible, 250);
+  arrow.addEventListener('click', function () { go(2); });
+})();
 
 window.scrollTo(0, 0);
 
