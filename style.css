@@ -4,7 +4,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Quita el recuadro azul/gris al tocar en celular */
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -14,10 +13,6 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
-
-/* ═══════════════════════════════════════════
-   LOADER
-   ═══════════════════════════════════════════ */
 
 #loader {
   position: fixed;
@@ -195,10 +190,6 @@ body {
   animation: mascotaBlink 5s linear infinite;
 }
 
-/* ═══════════════════════════════════════════
-   NAVBAR
-   ═══════════════════════════════════════════ */
-
 nav {
   position: fixed;
   top: 12px;
@@ -284,10 +275,6 @@ nav.no-glass {
 }
 
 .cart-count.show { transform: scale(1); }
-
-/* ═══════════════════════════════════════════
-   PRODUCTOS DESTACADOS — Carrusel
-   ═══════════════════════════════════════════ */
 
 :root {
   --hero-w: 75%;
@@ -502,10 +489,6 @@ nav.no-glass {
 
 .reveal { opacity: 0; }
 
-/* ═══════════════════════════════════════════
-   ENVÍO
-   ═══════════════════════════════════════════ */
-
 .envio-section {
   position: relative;
   width: 100%;
@@ -641,7 +624,6 @@ nav.no-glass {
   50% { transform: translateY(6px); }
 }
 
-
 .catalogo-reveal {
   position: fixed;
   inset: 0;
@@ -697,10 +679,6 @@ nav.no-glass {
   from { transform: translateY(-50%); }
   to { transform: translateY(0); }
 }
-
-/* ═══════════════════════════════════════════
-   CATÁLOGO — Grid + Cards
-   ═══════════════════════════════════════════ */
 
 .productos-header {
   padding-top: 80px;
@@ -889,10 +867,6 @@ nav.no-glass {
 }
 .product-card .card-btn:hover { background: #333; transform: scale(1.02); }
 .product-card .card-btn:active { transform: scale(.98); }
-
-/* ═══════════════════════════════════════════
-   MODAL — ppage (referencia)
-   ═══════════════════════════════════════════ */
 
 .ppage-overlay {
   position: fixed;
@@ -1323,7 +1297,6 @@ nav.no-glass {
   background: #30D158;
 }
 
-/* ══ VIEW TRANSITIONS ══ */
 ::view-transition-old(root),
 ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 
@@ -1387,10 +1360,6 @@ nav.no-glass {
 
 #ppage { display: none; }
 #ppage.active { display: flex; }
-
-/* ═══════════════════════════════════════════
-   CATÁLOGO RESPONSIVE
-   ═══════════════════════════════════════════ */
 
 @media (max-width: 768px) {
   .productos-grid {
@@ -1533,10 +1502,6 @@ nav.no-glass {
   to { transform: rotate(360deg); }
 }
 
-/* ═══════════════════════════════════════════
-   INTRO TICKER — entre Hero y Productos
-   ═══════════════════════════════════════════ */
-
 .intro-ticker {
   position: absolute;
   bottom: 0;
@@ -1577,23 +1542,11 @@ nav.no-glass {
   opacity: 0.5;
 }
 
-/* ═══════════════════════════════════════════
-   MOBILE (max-width: 768px)
-   ═══════════════════════════════════════════ */
-
 @media (max-width: 768px) {
 
-  /* clip mata el arrastre horizontal en movil sin crear scroll container
-     (no rompe sticky ni pins). Scopeado a movil para no afectar PC. */
-  html, body { overflow-x: clip; }
+  html, body { overflow-x: clip; overscroll-behavior: none; }
 
-  /* CLAVE celu real: evita que Chrome inicie scroll nativo por su cuenta
-     (carrera que ignora preventDefault en telefonos reales, no en DevTools).
-     Todo el scroll de la pagina lo maneja Lenis/SnapNav; los overlays
-     (carrito, producto, catalogo, checkout) conservan su scroll nativo. */
   .hero-section, .sticky, nav, .productos-section, .envio-section { touch-action: none; }
-
-  body { overscroll-behavior: none; }
 
   :root {
     --hero-w: 85%;
@@ -1602,30 +1555,23 @@ nav.no-glass {
     --center-w: 210px;  --center-x: 0px;    --center-y: 30px;
     --right-w: 160px;   --right-x: 175px;   --right-y: 20px;  --right-op: 0.55;
 
-    /* ════════ PANEL DE CONTROL MOVIL — ajustar X / Y / escala aca ════════ */
-
-    /* OJOS del dragon (hero) */
     --ojos-x: -4px;       /* horizontal: izquierda(-) / derecha(+) */
     --ojos-y: -13px;      /* vertical: arriba(-) / abajo(+) */
     --ojos-w: 20;         /* ancho (numero relativo, mas grande = mas ancho) */
     --ojos-h: 23;         /* alto (numero relativo) */
 
-    /* NUBES (productos destacados) */
     --nubes-y: 55px;       /* vertical: arriba(-) / abajo(+) */
     --nubes-h: 17.4%;     /* tamano de la franja (mas % = mas alta) */
     --nubes-scale: 2;     /* escala (1 = normal, 1.5 = mas grande) */
 
-    /* RUEDA IZQUIERDA (envio) */
     --ri-x: 5px;          /* horizontal */
     --ri-y: 4%;           /* vertical */
     --ri-s: 15px;         /* tamano */
 
-    /* RUEDA DERECHA (envio) */
     --rd-x: 6.5px;        /* horizontal */
     --rd-y: 2px;          /* vertical */
     --rd-s: 15px;         /* tamano */
 
-    /* CARRO / AUTO (envio) — la X (recorrido) se ajusta en js/x0.js */
     --carro-y: 137px;     /* vertical: arriba(-) / abajo(+) */
     --carro-scale: 5.65;  /* tamano */
   }
@@ -1660,12 +1606,9 @@ nav.no-glass {
   .card-info .prod-price { font-size: 16px; }
 
   .envio-section { height: 100vh; }
-  /* --env-slot = ancho de cada elemento del envio. Mas grande = mas recorrido
-     horizontal y mas separacion entre Envios / Calidad / Catalogo. PERILLA. */
   .envio-horiz { --env-slot: 200vw; width: calc(3 * var(--env-slot)); }
   .envio-item { flex: 0 0 var(--env-slot, 105vw); }
   .envio-item h2 { font-size: clamp(42px, 14vw, 150px); }
-  /* (--carro-scale ahora se controla desde el PANEL DE CONTROL de arriba) */
   .envio-img { height: 50px; }
   .envio-item-logo { position: relative; --logo-w: 520px; --logo-x: 126px; --logo-y: -114px; }
   .envio-logo-img { position: absolute; top: 50%; left: 50%; width: var(--logo-w, 400px); height: auto; transform: translate(calc(-50% + var(--logo-x, 0px)), calc(-50% + var(--logo-y, 0px))); pointer-events: none; }
@@ -1693,10 +1636,6 @@ nav.no-glass {
   overscroll-behavior: contain;
   transform: translateY(100%);
 }
-
-/* ═══════════════════════════════════════════
-   CARRITO DRAWER
-   ═══════════════════════════════════════════ */
 
 .cart-overlay {
   position: fixed;
@@ -1796,10 +1735,6 @@ nav.no-glass {
 .checkout-btn:hover { transform: scale(1.02); }
 #cartCheckoutBtn:hover { background: #25D366; }
 #cartMpBtn:hover { background: #0077cc; }
-
-/* ═══════════════════════════════════════════
-   CHECKOUT MODAL
-   ═══════════════════════════════════════════ */
 
 .checkout-modal {
   position: fixed;
@@ -1996,10 +1931,6 @@ nav.no-glass {
   .checkout-total-amount { font-size: 22px; }
 }
 
-/* ═══════════════════════════════════════════
-   BOTÓN VENTAJAS (dentro del catálogo)
-   ═══════════════════════════════════════════ */
-
 .catalogo-cta-wrap {
   display: flex;
   justify-content: center;
@@ -2030,10 +1961,6 @@ nav.no-glass {
   display: inline-block;
   animation: bounceArrow 1.2s ease infinite;
 }
-
-/* ═══════════════════════════════════════════
-   BENEFICIOS — Stacked Accordion
-   ═══════════════════════════════════════════ */
 
 .beneficios-section {
   position: relative;
@@ -2144,10 +2071,6 @@ nav.no-glass {
   padding: 0 24px 20px 84px;
 }
 
-/* ═══════════════════════════════════════════
-   CONTACTO
-   ═══════════════════════════════════════════ */
-
 .contacto-section-dune {
   position: relative;
   z-index: 1;
@@ -2235,10 +2158,6 @@ nav.no-glass {
   50% { box-shadow: 0 0 0 12px rgba(37,211,102,0); }
 }
 
-/* ═══════════════════════════════════════════
-   FOOTER
-   ═══════════════════════════════════════════ */
-
 .footer-dune {
   position: relative;
   z-index: 1;
@@ -2256,7 +2175,6 @@ nav.no-glass {
   letter-spacing: 0.04em;
 }
 
-/* RESPONSIVE — Beneficios + Contacto */
 @media (max-width: 768px) {
   .beneficios-section { padding: 72px 16px; }
   .beneficios-header { margin-bottom: 16px; }

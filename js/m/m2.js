@@ -1,4 +1,3 @@
-/* #c */
 export function s2() {
   'use strict';
   var _s = document.getElementById('cardStage');

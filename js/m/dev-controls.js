@@ -1,10 +1,4 @@
-/* Panel de ajuste en vivo. Aparece SOLO si la URL trae ?dev (o #dev),
-   asi los visitantes normales nunca lo ven.
-   Mueve elementos cambiando sus variables CSS en tiempo real.
-   Arrastrable desde la cabecera. Boton "Copiar CSS" para pegar los valores. */
 export function initDevControls() {
-  // Aparece SIEMPRE en local (localhost / 127.0.0.1 / file:// / red LAN) para
-  // desarrollar comodo, y en produccion (Vercel) solo si la URL trae ?dev.
   var host = window.location.hostname;
   var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '' ||
                 host.indexOf('192.168.') === 0 || host.indexOf('10.') === 0;
@@ -123,8 +117,6 @@ export function initDevControls() {
   panel.innerHTML = html;
   document.body.appendChild(panel);
 
-  // Lector de scroll en vivo (para coordinar las anclas del snap). Muestra el
-  // scrollY arriba del panel y lo loguea en consola cuando el scroll se detiene.
   (function () {
     var el = document.getElementById('dvpScroll');
     var last = -1, logT = null;
@@ -147,7 +139,6 @@ export function initDevControls() {
     if (!inp.classList.contains('dvp-range') && !inp.classList.contains('dvp-num')) return;
     var gi = +inp.dataset.g, vi = +inp.dataset.v, val = inp.value;
     setVal(GROUPS[gi], GROUPS[gi].vars[vi], val);
-    // sincronizar el slider con el numero y viceversa
     panel.querySelectorAll('[data-g="' + gi + '"][data-v="' + vi + '"]').forEach(function (o) {
       if (o !== inp) o.value = val;
     });
@@ -177,7 +168,6 @@ export function initDevControls() {
     } else { window.prompt('Copia manual:', out); }
   });
 
-  // arrastrar desde la cabecera
   var head = document.getElementById('dvpHead');
   var drag = false, sx = 0, sy = 0, px = 0, py = 0;
   head.addEventListener('pointerdown', function (e) {

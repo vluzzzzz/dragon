@@ -1,4 +1,3 @@
-/* #n */
 export function s4() {
   var _b = document.getElementById('cartToggle');
   if (!_b) return;

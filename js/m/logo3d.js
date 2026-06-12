@@ -10,9 +10,6 @@ export function initLogo3D() {
   var W = wrap.clientWidth || 400;
   var H = 550;
 
-  // Render solo cuando el canvas esta en pantalla. El logo vive en la seccion
-  // de ventajas (oculta casi siempre), asi que sin esto renderiza WebGL en cada
-  // frame de gusto y traba el scroll en movil.
   var _visible = false;
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
@@ -44,8 +41,6 @@ export function initLogo3D() {
   var logoGroup = new THREE.Group();
   scene.add(logoGroup);
 
-  // DRACOLoader decodifica el glb comprimido con Draco. El decoder se baja
-  // del CDN de Google (pequeño y cacheado), no se sube al repo.
   var dracoLoader = new DRACOLoader();
   dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
   var loader = new GLTFLoader();

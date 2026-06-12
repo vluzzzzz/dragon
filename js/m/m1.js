@@ -1,9 +1,5 @@
-/* #s */
 var _stConfigured = false;
 
-/* Fábrica única de Lenis con la integración correcta para ScrollTrigger.
-   Clave: syncTouch:true enruta el scroll táctil por Lenis para que los pin
-   funcionen en móvil, y el hook on('scroll') mantiene ScrollTrigger sincronizado. */
 export function makeLenis(opts) {
   var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   if (!_stConfigured && typeof ScrollTrigger !== 'undefined') {

@@ -1,4 +1,3 @@
-/* #t */
 export function s3() { s3._init(); }
 
 s3._init = function () {

@@ -18,8 +18,6 @@ window.Checkout = Checkout;
 var _catOpen = false;
 var _ventajasOpen = false;
 
-// Modo dev: local (localhost/127/file/LAN) o URL con ?dev. Activa el panel,
-// muestra el scroll en vivo y DESACTIVA el snap por gestos (para medir libre).
 var _DEV = (function () {
   var h = location.hostname;
   var local = h === 'localhost' || h === '127.0.0.1' || h === '' ||
@@ -29,26 +27,11 @@ var _DEV = (function () {
 })();
 window.__DEV__ = _DEV;
 
-// ── SnapNav: navegacion por secciones en movil (estilo fullpage) ─────────
-// En hero/productos el scroll va CONGELADO (lenis.stop + preventDefault del
-// touchmove): el dedo NO arrastra la pagina, asi la inercia de syncTouch no
-// puede descalibrar nada. Un dezlise dispara la animacion EXACTA a la
-// siguiente ancla. Al llegar al envio se libera el scroll normal; si el
-// usuario vuelve a subir por encima del envio, se re-engancha solo.
-// Costo en gama baja: cero trabajo por frame; touchmove es un solo if.
 var SnapNav = (function () {
   var enabled = false, frozen = false, animating = false;
   var sx = 0, sy = 0, startIdx = 0, skipTouch = false, settleTimer = null;
   var _last = ''; // ultimo gesto/decision, para la barra de debug (?debug)
 
-  // Anclas CALIBRADAS por el usuario en dispositivos reales. La pagina
-  // mezcla alturas en vh con pixeles fijos, asi que una proporcion pura
-  // NO calza entre pantallas: interpolamos linealmente entre 2 medidas.
-  //   vh=932 (DevTools): productos=740, envio=1387
-  //   vh=760 (celu real): envio=1234 (medido), productos=700 (PROVISIONAL,
-  //   medir con ?dev en el celu y reemplazar)
-  // El vh se captura UNA vez (la barra de direcciones cambia innerHeight
-  // al ocultarse y moveria las anclas a mitad de sesion).
   var _vhRef = 0;
   function lin(vh, v1, y1, v2, y2) { return y1 + (vh - v1) * (y2 - y1) / (v2 - v1); }
   function anchors() {
@@ -90,8 +73,6 @@ var SnapNav = (function () {
   function onTouchStart(e) {
     if (!e.touches || !e.touches[0]) return;
     sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-    // Overlays scrolleables (carrito, producto, catalogo, panel dev) y
-    // estados bloqueados se deciden UNA vez por toque (barato en touchmove).
     skipTouch = blocked() || !!(e.target && e.target.closest && e.target.closest('[data-lenis-prevent],#devPanel'));
     startIdx = idxAt(window.scrollY || 0, anchors());
     _last = 'ts idx=' + startIdx + (skipTouch ? ' (overlay)' : '');
@@ -114,11 +95,7 @@ var SnapNav = (function () {
     goTo(ni);
   }
   function onTouchEnd(e) { handleEnd(e, 'te'); }
-  // En celus reales el navegador puede "robar" el gesto y disparar touchcancel
-  // en vez de touchend: lo procesamos igual para no perder el dezlise.
   function onTouchCancel(e) { handleEnd(e, 'tc'); }
-  // Volver desde el envio hacia arriba: cuando el scroll libre se asienta
-  // por encima del ancla del envio, re-engancha al ancla mas cercana.
   function onScroll() {
     if (!enabled || frozen || animating || blocked()) return;
     var y = window.scrollY || 0;
@@ -135,8 +112,6 @@ var SnapNav = (function () {
   }
 
   function attach(l) { if (enabled && l) l.on('scroll', onScroll); }
-  // Tras cerrar overlays (que recrean Lenis y/o mueven el scroll): decidir
-  // estado segun la posicion actual, sin animar si ya esta en un ancla.
   function reengage() {
     if (!enabled || animating || blocked()) return;
     var y = window.scrollY || 0;
@@ -167,16 +142,10 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-// ── Version del build (bumpear en cada deploy) — visible en la barra de debug
-var BUILD = '2026-06-12-3';
+var BUILD = '2026-06-12-4';
 
-// ── Barra de debug EN PANTALLA: version, scroll en vivo, estado del snap,
-//    contadores de eventos touch, ultimo gesto y errores JS.
-//    TEMPORAL: visible SIEMPRE en movil mientras cazamos el bug (tambien se
-//    puede forzar con ?debug). Cuando este resuelto, dejar solo ?debug.
 (function _debugBar() {
-  var force = (location.search + location.hash).indexOf('debug') !== -1;
-  if (!force && window.innerWidth > 768) return;
+  if ((location.search + location.hash).indexOf('debug') === -1) return;
   var bar = document.createElement('div');
   bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'
     + 'background:rgba(0,0,0,.85);color:#4ade80;font:11px/1.5 monospace;'
@@ -210,8 +179,6 @@ var BUILD = '2026-06-12-3';
   paint();
 })();
 
-// ── Flechas "bajar" (solo movil): navegacion por TAP, garantizada aunque
-//    los gestos fallen. Hero -> productos (reusa #cta) y productos -> envio.
 (function _downArrows() {
   if (window.innerWidth > 768) return;
   function go(i) {
@@ -325,11 +292,6 @@ window.scrollTo(0, 0);
             if (s1._l) { s1._l.start(); s1._l.scrollTo(0, { immediate: true }); }
             var _env2 = document.querySelector('.envio-section');
             var _eh = document.querySelector('.envio-horiz');
-            // En movil el pin del envio se ata a la DISTANCIA real del track
-            // (ancho - viewport) x un factor, para que el contenido se mueva a
-            // buen ritmo sin importar lo ancha que sea la pista. Mas pista =>
-            // mas recorrido => pin mas largo automaticamente. PC sin cambios.
-            // >>> PERILLA ritmo: subi/baja el 1.6 (mas = mas lento/largo) <<<
             var _envEnd = function () {
               if (window.innerWidth > 768) return 'bottom top';
               var dx = _eh ? Math.max(0, _eh.offsetWidth - window.innerWidth) : window.innerHeight * 3;
@@ -349,9 +311,6 @@ window.scrollTo(0, 0);
               });
             }
             if (_eh) {
-              // Distancia horizontal real del track. Como funcion para que
-              // invalidateOnRefresh la recalcule (clave en movil: la medida
-              // inicial dentro del loader puede estar mal).
               var _getDx = function () { return Math.max(0, _eh.offsetWidth - window.innerWidth); };
               gsap.to(_eh, {
                 x: function () { return -_getDx(); },
@@ -394,10 +353,6 @@ window.scrollTo(0, 0);
                   invalidateOnRefresh: true
                 }
               });
-              // Efecto "cinta de correr": el carro entra desde la izquierda y se
-              // queda en el centro; mientras el fondo y los textos siguen pasando
-              // y las ruedas giran, parece que avanza aunque este quieto.
-              // >>> PERILLA: el 0.28 = cuanto del scroll usa para llegar al centro.
               _carTl.fromTo(_ec, { left: '12vw' }, { left: '50vw', ease: 'power2.out', duration: 0.28 });
               _carTl.to({}, { duration: 0.72 });
             }
@@ -416,8 +371,6 @@ window.scrollTo(0, 0);
               });
             }
 
-            // Navegacion por secciones (movil): pagina congelada en
-            // hero/productos, un dezlise = una seccion exacta. Ver SnapNav.
             SnapNav.init();
 
             ScrollTrigger.refresh();
@@ -437,13 +390,9 @@ window.scrollTo(0, 0);
       .to(_obj, { v: 100, duration: 1.2, ease: 'power2.in' });
 })();
 
-
 (function _navWatch() {
   var _nav = document.getElementById('mainNav');
   if (_nav) {
-    // Nav blanco SOLO mientras la barra superior esta sobre la seccion de
-    // envio (fondo oscuro). Atado a la posicion real de la seccion para que
-    // calce igual en PC y movil (no a un % aproximado). Negro el resto.
     var _white = false;
     if (!_catOpen && !_ventajasOpen) {
       var _env = document.querySelector('.envio-section');
@@ -1394,8 +1343,6 @@ document.getElementById('contactoBtn').addEventListener('click', function (e) {
   _openVentajas('#contacto');
 });
 
-// Refresh extra cuando todo el layout (imagenes/fuentes) ya cargo, para que
-// las medidas de los pin se tomen con la pagina asentada (clave en movil).
 window.addEventListener('load', function () {
   if (!_catOpen && !_ventajasOpen) {
     requestAnimationFrame(function () { ScrollTrigger.refresh(); });
