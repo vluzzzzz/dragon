@@ -86,12 +86,11 @@ window.scrollTo(0, 0);
             if (s1._l) { s1._l.start(); s1._l.scrollTo(0, { immediate: true }); }
             var _env2 = document.querySelector('.envio-section');
             var _eh = document.querySelector('.envio-horiz');
-            var _isMob = window.matchMedia('(max-width: 768px)').matches;
-            // En movil alargamos el recorrido del envio (~3.3 pantallas de
-            // scroll) para que el scroll horizontal no se complete de un solo
-            // flick y se sienta mas largo/controlado. En PC se mantiene igual.
-            // (subi el factor para que dure mas; ajustar este 3.3 si hace falta)
-            var _envEnd = function () { return _isMob ? '+=' + Math.round(window.innerHeight * 3.3) : 'bottom top'; };
+            // En movil alargamos MUCHO el recorrido del envio para que el scroll
+            // horizontal dure varios flicks. Se chequea el ancho en cada refresh
+            // (robusto si cambias a modo movil despues de cargar). PC sin cambios.
+            // >>> PERILLA: subi/baja este 6 para mas/menos largo <<<
+            var _envEnd = function () { return window.innerWidth <= 768 ? '+=' + Math.round(window.innerHeight * 6) : 'bottom top'; };
             if (_env2) {
               gsap.set('#productos', { y: 0 });
               gsap.to('#productos', {
