@@ -94,6 +94,7 @@ export function initDevControls() {
     + '#devPanel .dvp-num{width:52px;flex:none;background:#000;color:#fff;border:1px solid rgba(255,255,255,.2);'
     + 'border-radius:5px;padding:3px 4px;font-size:11px;text-align:right}'
     + '#devPanel .dvp-unit{width:18px;flex:none;color:#64748b;font-size:10px}'
+    + '#devPanel .dvp-scroll{padding:8px 12px;background:#0ea5e9;color:#04222e;font-family:monospace;font-weight:700;font-size:14px;text-align:center;letter-spacing:.03em}'
     + '#devPanel .dvp-foot{padding:8px 10px;border-top:1px solid rgba(255,255,255,.12)}'
     + '#devPanel .dvp-copy{width:100%;padding:9px;border:none;border-radius:8px;background:#38bdf8;color:#04222e;'
     + 'font-weight:700;font-size:12.5px;cursor:pointer}'
@@ -105,6 +106,7 @@ export function initDevControls() {
   panel.setAttribute('data-lenis-prevent', '');
   var html = '<div class="dvp-head" id="dvpHead"><span>Controles (arrastrame)</span>'
     + '<span><button id="dvpMin" title="Minimizar">_</button><button id="dvpClose" title="Cerrar">x</button></span></div>'
+    + '<div class="dvp-scroll" id="dvpScroll">scrollY: 0</div>'
     + '<div class="dvp-body" id="dvpBody">';
   GROUPS.forEach(function (g, gi) {
     html += '<div class="dvp-group"><div class="dvp-gtitle">' + g.title + '</div>';
@@ -120,6 +122,25 @@ export function initDevControls() {
   html += '</div><div class="dvp-foot"><button class="dvp-copy" id="dvpCopy">Copiar CSS</button></div>';
   panel.innerHTML = html;
   document.body.appendChild(panel);
+
+  // Lector de scroll en vivo (para coordinar las anclas del snap). Muestra el
+  // scrollY arriba del panel y lo loguea en consola cuando el scroll se detiene.
+  (function () {
+    var el = document.getElementById('dvpScroll');
+    var last = -1, logT = null;
+    (function tick() {
+      var y = Math.round(window.scrollY || window.pageYOffset || 0);
+      if (y !== last) {
+        last = y;
+        el.textContent = 'scrollY: ' + y + '   (vh ' + window.innerHeight + ')';
+        if (logT) clearTimeout(logT);
+        logT = setTimeout(function () {
+          console.log('%c[POS] scrollY=' + y + '  vh=' + window.innerHeight, 'color:#0ea5e9;font-weight:bold;font-size:13px');
+        }, 220);
+      }
+      requestAnimationFrame(tick);
+    })();
+  })();
 
   function onInput(e) {
     var inp = e.target;

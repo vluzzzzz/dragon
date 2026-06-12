@@ -17,6 +17,17 @@ window.Checkout = Checkout;
 var _catOpen = false;
 var _ventajasOpen = false;
 
+// Modo dev: local (localhost/127/file/LAN) o URL con ?dev. Activa el panel,
+// muestra el scroll en vivo y DESACTIVA el snap por gestos (para medir libre).
+var _DEV = (function () {
+  var h = location.hostname;
+  var local = h === 'localhost' || h === '127.0.0.1' || h === '' ||
+              h.indexOf('192.168.') === 0 || h.indexOf('10.') === 0;
+  var q = location.search + location.hash;
+  return local || q.indexOf('dev') !== -1;
+})();
+window.__DEV__ = _DEV;
+
 window.scrollTo(0, 0);
 
 if (s3._st) s3._st.disable();
@@ -182,7 +193,7 @@ window.scrollTo(0, 0);
             //    Ultra liviano: solo touchstart/touchend PASIVOS, sin trabajo
             //    por frame ni preventDefault. Apto para celulares de gama baja.
             (function _gestureSnap() {
-              if (window.innerWidth > 768) return;
+              if (window.innerWidth > 768 || _DEV) return; // en dev: scroll libre para medir
               var animating = false, sx = 0, sy = 0;
               function anchors() {
                 var prod = s3._st ? s3._st.end : window.innerHeight;
@@ -215,10 +226,11 @@ window.scrollTo(0, 0);
                 });
               }
               window.addEventListener('touchstart', function (e) {
+                if (!e.touches || !e.touches[0]) return;
                 sx = e.touches[0].clientX; sy = e.touches[0].clientY;
               }, { passive: true });
               window.addEventListener('touchend', function (e) {
-                if (animating || blocked()) return;
+                if (animating || blocked() || !e.changedTouches || !e.changedTouches[0]) return;
                 var A = anchors();
                 if ((window.scrollY || 0) >= A[2] - 6) return;
                 var dx = sx - e.changedTouches[0].clientX;
