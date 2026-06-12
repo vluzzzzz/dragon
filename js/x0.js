@@ -29,6 +29,119 @@ var _DEV = (function () {
 })();
 window.__DEV__ = _DEV;
 
+// ── SnapNav: navegacion por secciones en movil (estilo fullpage) ─────────
+// En hero/productos el scroll va CONGELADO (lenis.stop + preventDefault del
+// touchmove): el dedo NO arrastra la pagina, asi la inercia de syncTouch no
+// puede descalibrar nada. Un dezlise dispara la animacion EXACTA a la
+// siguiente ancla. Al llegar al envio se libera el scroll normal; si el
+// usuario vuelve a subir por encima del envio, se re-engancha solo.
+// Costo en gama baja: cero trabajo por frame; touchmove es un solo if.
+var SnapNav = (function () {
+  var enabled = false, frozen = false, animating = false;
+  var sx = 0, sy = 0, startIdx = 0, skipTouch = false, settleTimer = null;
+
+  // Anclas medidas por el usuario (vh=932: productos=740, envio=1387),
+  // relativas al alto de pantalla. >>> PERILLAS: estos 2 factores <<<
+  function anchors() {
+    var vh = window.innerHeight;
+    return [0, Math.round(0.794 * vh), Math.round(1.488 * vh)];
+  }
+  function blocked() {
+    if (_catOpen || _ventajasOpen) return true;
+    var pp = document.getElementById('ppage');
+    return !!(pp && pp.style.display !== 'none');
+  }
+  function idxAt(y, A) {
+    var bi = 0, bd = Infinity;
+    for (var i = 0; i < 3; i++) { var d = Math.abs(A[i] - y); if (d < bd) { bd = d; bi = i; } }
+    return bi;
+  }
+  function freeze() { frozen = true; if (s1._l) s1._l.stop(); }
+  function release() { frozen = false; if (s1._l) s1._l.start(); }
+
+  function goTo(idx) {
+    if (!s1._l || animating) return;
+    var A = anchors();
+    animating = true;
+    frozen = true;           // congela el touch durante la animacion
+    s1._l.stop();            // mata cualquier inercia pendiente
+    s1._l.scrollTo(A[idx], {
+      duration: 0.8, force: true, lock: true,
+      easing: function (t) { return 1 - Math.pow(1 - t, 3); },
+      onComplete: function () {
+        animating = false;
+        if (idx >= 2) release(); else freeze();
+      }
+    });
+  }
+
+  function onTouchStart(e) {
+    if (!e.touches || !e.touches[0]) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    // Overlays scrolleables (carrito, producto, catalogo, panel dev) y
+    // estados bloqueados se deciden UNA vez por toque (barato en touchmove).
+    skipTouch = blocked() || !!(e.target && e.target.closest && e.target.closest('[data-lenis-prevent],#devPanel'));
+    startIdx = idxAt(window.scrollY || 0, anchors());
+  }
+  function onTouchMove(e) {
+    if (!frozen || skipTouch) return;
+    if (e.cancelable) e.preventDefault();
+  }
+  function onTouchEnd(e) {
+    if (!frozen || animating || skipTouch) return;
+    if (!e.changedTouches || !e.changedTouches[0]) return;
+    var dx = sx - e.changedTouches[0].clientX;
+    var dy = sy - e.changedTouches[0].clientY;
+    if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) return; // ignora horizontales (carrusel)
+    var ni = startIdx + (dy > 0 ? 1 : -1);
+    if (ni < 0 || ni > 2 || ni === startIdx) return;
+    goTo(ni);
+  }
+  // Volver desde el envio hacia arriba: cuando el scroll libre se asienta
+  // por encima del ancla del envio, re-engancha al ancla mas cercana.
+  function onScroll() {
+    if (!enabled || frozen || animating || blocked()) return;
+    var y = window.scrollY || 0;
+    if (y >= anchors()[2] - 20) return;
+    if (settleTimer) clearTimeout(settleTimer);
+    settleTimer = setTimeout(function () {
+      if (frozen || animating || blocked()) return;
+      var y2 = window.scrollY || 0;
+      var A = anchors();
+      if (y2 >= A[2] - 20) return;
+      goTo(idxAt(y2, A));
+    }, 160);
+  }
+
+  function attach(l) { if (enabled && l) l.on('scroll', onScroll); }
+  // Tras cerrar overlays (que recrean Lenis y/o mueven el scroll): decidir
+  // estado segun la posicion actual, sin animar si ya esta en un ancla.
+  function reengage() {
+    if (!enabled || animating || blocked()) return;
+    var y = window.scrollY || 0;
+    var A = anchors();
+    if (y >= A[2] - 20) { release(); return; }
+    var bi = idxAt(y, A);
+    if (Math.abs(y - A[bi]) < 4) { frozen = true; if (s1._l) s1._l.stop(); }
+    else goTo(bi);
+  }
+  function init() {
+    if (window.innerWidth > 768 || (_DEV && !/snaptest/.test(location.search))) return;
+    enabled = true;
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    attach(s1._l);
+    freeze();
+  }
+  return {
+    init: init, attach: attach, goTo: goTo, release: release, reengage: reengage,
+    active: function () { return enabled; },
+    isFrozen: function () { return frozen; }
+  };
+})();
+window.__SnapNav = SnapNav;
+
 window.scrollTo(0, 0);
 
 if (s3._st) s3._st.disable();
@@ -189,53 +302,9 @@ window.scrollTo(0, 0);
               });
             }
 
-            // ── Navegacion por gestos (solo movil): un dezlise = una seccion
-            //    (hero -> productos -> envio). Al llegar al envio: scroll libre.
-            //    Ultra liviano: solo touchstart/touchend PASIVOS, sin trabajo
-            //    por frame ni preventDefault. Apto para celulares de gama baja.
-            (function _gestureSnap() {
-              if (window.innerWidth > 768 || (_DEV && !/snaptest/.test(location.search))) return; // en dev: scroll libre para medir (?snaptest fuerza ON)
-              var animating = false, sx = 0, sy = 0, startIdx = 0;
-              // Anclas medidas por el usuario, relativas al alto de pantalla
-              // (medido en vh=932: productos=740, envio=1387) para que se
-              // adapten a otros celulares. >>> PERILLA: estos 2 factores.
-              function anchors() {
-                var vh = window.innerHeight;
-                return [0, Math.round(0.794 * vh), Math.round(1.488 * vh)];
-              }
-              function blocked() {
-                if (_catOpen || _ventajasOpen) return true;
-                var pp = document.getElementById('ppage');
-                return !!(pp && pp.style.display !== 'none' && getComputedStyle(pp).display !== 'none');
-              }
-              function idxAt(y, A) {
-                var bi = 0, bd = Infinity;
-                for (var i = 0; i < 3; i++) { var d = Math.abs(A[i] - y); if (d < bd) { bd = d; bi = i; } }
-                return bi;
-              }
-              window.addEventListener('touchstart', function (e) {
-                if (!e.touches || !e.touches[0]) return;
-                sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-                // Seccion ANTES de mover el dedo: clave para que aterrice exacto.
-                startIdx = idxAt(window.scrollY || 0, anchors());
-              }, { passive: true });
-              window.addEventListener('touchend', function (e) {
-                if (animating || blocked() || !e.changedTouches || !e.changedTouches[0]) return;
-                if (startIdx >= 2) return; // arranco en el envio (o pasado) -> scroll libre
-                var dx = sx - e.changedTouches[0].clientX;
-                var dy = sy - e.changedTouches[0].clientY;
-                if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) return; // ignora horizontales (carrusel)
-                var A = anchors();
-                var ni = startIdx + (dy > 0 ? 1 : -1);
-                if (ni < 0 || ni > 2) return;
-                animating = true;
-                s1._l.scrollTo(A[ni], {
-                  duration: 0.7, force: true,
-                  easing: function (t) { return 1 - Math.pow(1 - t, 3); },
-                  onComplete: function () { animating = false; }
-                });
-              }, { passive: true });
-            })();
+            // Navegacion por secciones (movil): pagina congelada en
+            // hero/productos, un dezlise = una seccion exacta. Ver SnapNav.
+            SnapNav.init();
 
             ScrollTrigger.refresh();
             setTimeout(function () { ScrollTrigger.refresh(true); }, 400);
@@ -320,6 +389,7 @@ function _closeCatalogo(what, onDone) {
   if (!s1._l) {
     s1._l = makeLenis();
     s1._l.stop();
+    SnapNav.attach(s1._l);
   }
 
   var _sticky = document.querySelector('.sticky');
@@ -371,6 +441,7 @@ function _closeCatalogo(what, onDone) {
     requestAnimationFrame(function () {
       if (s3._st) { s3._st.enable(); s3._st.refresh(); }
       if (s1._l) { s1._l.start(); }
+      SnapNav.reengage();
       if (onDone) { requestAnimationFrame(function () { onDone(); }); }
     });
   });
@@ -386,9 +457,11 @@ function _closeVentajas(onDone) {
     document.documentElement.style.overflow = '';
     if (!s1._l) {
       s1._l = makeLenis();
+      SnapNav.attach(s1._l);
     }
     if (s3._st) { s3._st.enable(); s3._st.refresh(); }
     if (s1._l) s1._l.start();
+    SnapNav.reengage();
     if (onDone) onDone();
   }});
 }
@@ -419,22 +492,23 @@ function _openVentajas(scrollTo) {
   }});
 }
 
+function _scrollHome(dur) {
+  if (SnapNav.active()) { SnapNav.goTo(0); return; }
+  if (s1._l) s1._l.scrollTo(0, { duration: dur || 0.8 });
+  else window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 document.getElementById('inicioBtn').addEventListener('click', function (e) {
   e.preventDefault();
   if (_catOpen) {
-    _closeCatalogo('#heroFrame', function () {
-      if (s1._l) s1._l.scrollTo(0, { duration: 0.6 });
-    });
+    _closeCatalogo('#heroFrame', function () { _scrollHome(0.6); });
     return;
   }
   if (_ventajasOpen) {
-    _closeVentajas(function () {
-      if (s1._l) s1._l.scrollTo(0, { duration: 0.6 });
-    });
+    _closeVentajas(function () { _scrollHome(0.6); });
     return;
   }
-  if (s1._l) s1._l.scrollTo(0, { duration: 0.8 });
-  else window.scrollTo({ top: 0, behavior: 'smooth' });
+  _scrollHome(0.8);
 });
 
 document.getElementById('catalogoNavBtn').addEventListener('click', function (e) {
@@ -453,7 +527,9 @@ document.getElementById('catalogoNavBtn').addEventListener('click', function (e)
           if (s3._st) { s3._st.enable(); }
           if (!s1._l) {
             s1._l = makeLenis();
+            SnapNav.attach(s1._l);
           }
+          SnapNav.reengage();
           var _nav2 = document.getElementById('mainNav');
           if (_nav2) {
             _nav2.querySelectorAll('.nav-links a').forEach(function (a) { a.style.color = '#fff'; });
@@ -467,10 +543,12 @@ document.getElementById('catalogoNavBtn').addEventListener('click', function (e)
   }
   if (_ventajasOpen) {
     _closeVentajas(function () {
+      if (SnapNav.active()) SnapNav.release();
       if (s1._l) s1._l.scrollTo('.envio-section', { offset: window.innerHeight * 1.5, duration: 1.5 });
     });
     return;
   }
+  if (SnapNav.active()) SnapNav.release();
   if (s1._l) s1._l.scrollTo('.envio-section', { offset: window.innerHeight * 1.5, duration: 1.5 });
 });
 
