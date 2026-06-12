@@ -142,40 +142,30 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-4';
+var BUILD = '2026-06-12-5';
 
 (function _debugBar() {
-  if ((location.search + location.hash).indexOf('debug') === -1) return;
+  if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
   var bar = document.createElement('div');
   bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'
-    + 'background:rgba(0,0,0,.85);color:#4ade80;font:11px/1.5 monospace;'
+    + 'background:rgba(0,0,0,.85);color:#4ade80;font:11px/1.4 monospace;'
     + 'padding:6px 9px;pointer-events:none;white-space:pre-wrap;word-break:break-all;';
   document.body.appendChild(bar);
-  var lastErr = '';
-  var cnt = { ts: 0, tm: 0, te: 0, tc: 0 };
-  window.addEventListener('touchstart', function () { cnt.ts++; }, { passive: true });
-  window.addEventListener('touchmove', function () { cnt.tm++; }, { passive: true });
-  window.addEventListener('touchend', function () { cnt.te++; }, { passive: true });
-  window.addEventListener('touchcancel', function () { cnt.tc++; }, { passive: true });
-  window.addEventListener('error', function (e) {
-    lastErr = (e.message || 'error') + ' @' + ((e.filename || '').split('/').pop() || '?') + ':' + (e.lineno || '?');
-  });
-  window.addEventListener('unhandledrejection', function (e) {
-    lastErr = 'promise: ' + ((e.reason && e.reason.message) || e.reason || '?');
-  });
+  function rectOf(sel) { var el = document.querySelector(sel); return el ? el.getBoundingClientRect() : null; }
   function paint() {
-    var A = SnapNav.anchors();
-    var st = !SnapNav.active() ? 'OFF' : (SnapNav.isAnimating() ? 'ANIM' : (SnapNav.isFrozen() ? 'FROZEN' : 'FREE'));
+    var vv = window.visualViewport;
+    var vvh = vv ? Math.round(vv.height) : window.innerHeight;
+    var sec = rectOf('.envio-section');
+    var rd = rectOf('.rueda-der');
+    var cut = rd ? Math.round(rd.bottom - vvh) : '?';
     bar.textContent =
-      'BUILD ' + BUILD + ' | y=' + Math.round(window.scrollY) + ' | st=' + st
-      + ' | vw=' + window.innerWidth + ' vh=' + window.innerHeight
-      + ' | A=[' + A.join(',') + ']'
-      + '\nev ts:' + cnt.ts + ' tm:' + cnt.tm + ' te:' + cnt.te + ' tc:' + cnt.tc
-      + ' | ' + (SnapNav.lastInfo() || '(sin gestos aun)')
-      + (lastErr ? '\nERR: ' + lastErr : '');
+      'BUILD ' + BUILD + ' | y=' + Math.round(window.scrollY)
+      + ' | vh=' + window.innerHeight + ' visible=' + vvh + ' (barra ' + (window.innerHeight - vvh) + ')'
+      + '\nseccion top=' + (sec ? Math.round(sec.top) : '?')
+      + ' | rueda fondo=' + (rd ? Math.round(rd.bottom) : '?')
+      + ' | rueda ' + (rd && rd.bottom > vvh ? 'CORTADA ' + cut + 'px' : 'OK');
   }
-  setInterval(paint, 300);
-  window.addEventListener('touchend', function () { setTimeout(paint, 60); setTimeout(paint, 950); }, { passive: true });
+  setInterval(paint, 200);
   paint();
 })();
 
