@@ -33,13 +33,20 @@ var SnapNav = (function () {
   var _last = ''; // ultimo gesto/decision, para la barra de debug (?debug)
   var envPinSt = null; // ScrollTrigger del pin del envio (para el clamp del final)
 
-  var _vhRef = 0;
+  var _vhRef = 0, prodTitleTop = 0;
   function lin(vh, v1, y1, v2, y2) { return y1 + (vh - v1) * (y2 - y1) / (v2 - v1); }
+  function measureProd() {
+    var el = document.querySelector('.prod-title-wrap');
+    if (el && (window.scrollY || 0) < 5) prodTitleTop = Math.round(el.getBoundingClientRect().top);
+  }
   function anchors() {
+    if (!prodTitleTop) measureProd();
     var vh = _vhRef || (_vhRef = window.innerHeight);
-    return [0,
-      Math.round(lin(vh, 932, 740, 760, 700)),
-      Math.round(lin(vh, 932, 1387, 760, 1234))];
+    // Productos: atado a la posicion REAL del titulo (escala con cualquier
+    // pantalla). 188 = calibracion del punto bueno (titulo en 888 -> ancla 700).
+    var prod = prodTitleTop ? (prodTitleTop - 188) : Math.round(lin(vh, 932, 740, 760, 700));
+    var env = Math.round(lin(vh, 932, 1387, 760, 1234));
+    return [0, prod, env];
   }
   function blocked() {
     if (_catOpen || _ventajasOpen) return true;
@@ -133,6 +140,8 @@ var SnapNav = (function () {
   function init() {
     if (window.innerWidth > 768 || (_DEV && !/snaptest/.test(location.search))) return;
     enabled = true;
+    measureProd();
+    window.addEventListener('load', measureProd);
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
@@ -159,7 +168,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-8';
+var BUILD = '2026-06-12-9';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
