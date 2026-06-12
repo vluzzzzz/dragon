@@ -171,7 +171,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-12';
+var BUILD = '2026-06-12-13';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -272,6 +272,7 @@ window.scrollTo(0, 0);
               var dx = _eh ? Math.max(0, _eh.offsetWidth - window.innerWidth) : window.innerHeight * 3;
               return '+=' + Math.round(dx * 1.6);
             };
+            var _isMob = window.innerWidth <= 768;
             if (_env2) {
               gsap.set('#productos', { y: 0 });
               gsap.to('#productos', {
@@ -305,7 +306,7 @@ window.scrollTo(0, 0);
               if (_df) {
                 gsap.set(_df, { x: 0 });
                 gsap.to(_df, {
-                  x: function () { return -_getDx() * 0.5; },
+                  x: function () { return -_getDx() * (_isMob ? 0.5 : 0.3); },
                   ease: 'none',
                   scrollTrigger: {
                     trigger: '.envio-section',
@@ -319,18 +320,32 @@ window.scrollTo(0, 0);
             }
             var _ec = document.getElementById('envioCarroWrap');
             if (_ec) {
-              gsap.set(_ec, { left: '12vw' });
-              var _carTl = gsap.timeline({
-                scrollTrigger: {
-                  trigger: '.envio-section',
-                  start: 'top top',
-                  end: _envEnd,
-                  scrub: 1,
-                  invalidateOnRefresh: true
-                }
-              });
-              _carTl.fromTo(_ec, { left: '12vw' }, { left: '50vw', ease: 'power2.out', duration: 0.28 });
-              _carTl.to({}, { duration: 0.72 });
+              if (_isMob) {
+                gsap.set(_ec, { left: '12vw' });
+                var _carTl = gsap.timeline({
+                  scrollTrigger: {
+                    trigger: '.envio-section',
+                    start: 'top top',
+                    end: _envEnd,
+                    scrub: 1,
+                    invalidateOnRefresh: true
+                  }
+                });
+                _carTl.fromTo(_ec, { left: '12vw' }, { left: '50vw', ease: 'power2.out', duration: 0.28 });
+                _carTl.to({}, { duration: 0.72 });
+              } else {
+                gsap.set(_ec, { left: '20vw' });
+                gsap.to(_ec, {
+                  left: '80vw',
+                  scrollTrigger: {
+                    trigger: '.envio-section',
+                    start: 'top top',
+                    end: _envEnd,
+                    scrub: 1,
+                    invalidateOnRefresh: true
+                  }
+                });
+              }
             }
             var _rw = document.querySelectorAll('.rueda');
             if (_rw.length) {
