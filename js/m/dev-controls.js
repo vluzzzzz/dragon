@@ -54,6 +54,12 @@ export function initDevControls() {
       { v: '--cat-w', label: 'Ancho', unit: 'px', min: 50, max: 1500, step: 5 },
       { v: '--cat-x', label: 'X', unit: 'px', min: -800, max: 800, step: 2 },
       { v: '--cat-y', label: 'Y', unit: 'px', min: -800, max: 800, step: 2 }
+    ]},
+    { title: 'Boton VER', sel: '.envio-item-catalogo', vars: [
+      { v: '--btn-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--btn-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--btn-scale', label: 'Escala', unit: '', min: 0.4, max: 3, step: 0.05 },
+      { v: '--btn-w', label: 'Ancho', unit: 'px', min: 60, max: 400, step: 5 }
     ]}
   ];
 

@@ -1661,9 +1661,9 @@ nav.no-glass {
   .envio-item h2 { font-size: clamp(42px, 14vw, 150px); }
   /* (--carro-scale ahora se controla desde el PANEL DE CONTROL de arriba) */
   .envio-img { height: 50px; }
-  .envio-item-logo { position: relative; --logo-w: 400px; --logo-x: 0px; --logo-y: -114px; }
+  .envio-item-logo { position: relative; --logo-w: 520px; --logo-x: 0px; --logo-y: -114px; }
   .envio-logo-img { position: absolute; top: 50%; left: 50%; width: var(--logo-w, 400px); height: auto; transform: translate(calc(-50% + var(--logo-x, 0px)), calc(-50% + var(--logo-y, 0px))); pointer-events: none; }
-  .envio-item-img { position: relative; --img2-w: 675px; --img2-x: 0px; --img2-y: -114px; }
+  .envio-item-img { position: relative; --img2-w: 815px; --img2-x: 0px; --img2-y: -22px; }
   .envio-item-img-tag { position: absolute; top: 50%; left: 50%; width: var(--img2-w, 200px); height: auto; transform: translate(calc(-50% + var(--img2-x, 0px)), calc(-50% + var(--img2-y, 0px))); pointer-events: none; }
 
   .intro-ticker-track span,
@@ -1671,7 +1671,7 @@ nav.no-glass {
 
   .cart-drawer { width: 100% !important; max-width: 100% !important; }
 
-  .envio-item-catalogo { --cat-w: 250px; --cat-x: 0px; --cat-y: 0px; --btn-w: 130px; --btn-x: 0px; --btn-y: 0px; --btn-scale: 1; --btn-radius: 12px; }
+  .envio-item-catalogo { --cat-w: 435px; --cat-x: 220px; --cat-y: -150px; --btn-w: 130px; --btn-x: 0px; --btn-y: 0px; --btn-scale: 1; --btn-radius: 12px; }
   .catalogo-img { position: absolute; top: 50%; left: 50%; width: var(--cat-w, 250px); height: auto; transform: translate(calc(-50% + var(--cat-x, 0px)), calc(-50% + var(--cat-y, 0px))); pointer-events: none; }
   .catalogo-btn { margin-top: 120px; font-size: 16px; padding: 8px 0; }
 
