@@ -1654,7 +1654,10 @@ nav.no-glass {
   .card-info .prod-price { font-size: 16px; }
 
   .envio-section { height: 100vh; }
-  .envio-horiz { width: calc(3 * 105vw); }
+  /* --env-slot = ancho de cada elemento del envio. Mas grande = mas recorrido
+     horizontal y mas separacion entre Envios / Calidad / Catalogo. PERILLA. */
+  .envio-horiz { --env-slot: 200vw; width: calc(3 * var(--env-slot)); }
+  .envio-item { flex: 0 0 var(--env-slot, 105vw); }
   .envio-item h2 { font-size: clamp(42px, 14vw, 150px); }
   /* (--carro-scale ahora se controla desde el PANEL DE CONTROL de arriba) */
   .envio-img { height: 50px; }

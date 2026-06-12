@@ -86,11 +86,16 @@ window.scrollTo(0, 0);
             if (s1._l) { s1._l.start(); s1._l.scrollTo(0, { immediate: true }); }
             var _env2 = document.querySelector('.envio-section');
             var _eh = document.querySelector('.envio-horiz');
-            // En movil alargamos MUCHO el recorrido del envio para que el scroll
-            // horizontal dure varios flicks. Se chequea el ancho en cada refresh
-            // (robusto si cambias a modo movil despues de cargar). PC sin cambios.
-            // >>> PERILLA: subi/baja este 6 para mas/menos largo <<<
-            var _envEnd = function () { return window.innerWidth <= 768 ? '+=' + Math.round(window.innerHeight * 6) : 'bottom top'; };
+            // En movil el pin del envio se ata a la DISTANCIA real del track
+            // (ancho - viewport) x un factor, para que el contenido se mueva a
+            // buen ritmo sin importar lo ancha que sea la pista. Mas pista =>
+            // mas recorrido => pin mas largo automaticamente. PC sin cambios.
+            // >>> PERILLA ritmo: subi/baja el 1.6 (mas = mas lento/largo) <<<
+            var _envEnd = function () {
+              if (window.innerWidth > 768) return 'bottom top';
+              var dx = _eh ? Math.max(0, _eh.offsetWidth - window.innerWidth) : window.innerHeight * 3;
+              return '+=' + Math.round(dx * 1.6);
+            };
             if (_env2) {
               gsap.set('#productos', { y: 0 });
               gsap.to('#productos', {
@@ -127,7 +132,7 @@ window.scrollTo(0, 0);
               if (_df) {
                 gsap.set(_df, { x: 0 });
                 gsap.to(_df, {
-                  x: function () { return -_getDx() * 0.3; },
+                  x: function () { return -_getDx() * 0.12; },
                   ease: 'none',
                   scrollTrigger: {
                     trigger: '.envio-section',
