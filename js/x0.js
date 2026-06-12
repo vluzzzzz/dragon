@@ -31,6 +31,7 @@ var SnapNav = (function () {
   var enabled = false, frozen = false, animating = false;
   var sx = 0, sy = 0, startIdx = 0, skipTouch = false, settleTimer = null;
   var _last = ''; // ultimo gesto/decision, para la barra de debug (?debug)
+  var envPinSt = null; // ScrollTrigger del pin del envio (para el clamp del final)
 
   var _vhRef = 0;
   function lin(vh, v1, y1, v2, y2) { return y1 + (vh - v1) * (y2 - y1) / (v2 - v1); }
@@ -97,7 +98,15 @@ var SnapNav = (function () {
   function onTouchEnd(e) { handleEnd(e, 'te'); }
   function onTouchCancel(e) { handleEnd(e, 'tc'); }
   function onScroll() {
-    if (!enabled || frozen || animating || blocked()) return;
+    if (!enabled) return;
+    if (envPinSt && !animating) {
+      var yc = window.scrollY || 0;
+      if (yc > envPinSt.end + 0.5) {
+        if (s1._l) s1._l.scrollTo(envPinSt.end, { immediate: true, force: true });
+        return;
+      }
+    }
+    if (frozen || animating || blocked()) return;
     var y = window.scrollY || 0;
     if (y >= anchors()[2] - 20) return;
     if (settleTimer) clearTimeout(settleTimer);
@@ -131,9 +140,10 @@ var SnapNav = (function () {
     attach(s1._l);
     freeze();
   }
+  function setEnvPin(st) { envPinSt = st; }
   return {
     init: init, attach: attach, goTo: goTo, release: release, reengage: reengage,
-    anchors: anchors,
+    anchors: anchors, setEnvPin: setEnvPin,
     active: function () { return enabled; },
     isFrozen: function () { return frozen; },
     isAnimating: function () { return animating; },
@@ -142,7 +152,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-6';
+var BUILD = '2026-06-12-7';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -302,7 +312,7 @@ window.scrollTo(0, 0);
             }
             if (_eh) {
               var _getDx = function () { return Math.max(0, _eh.offsetWidth - window.innerWidth); };
-              gsap.to(_eh, {
+              var _envTween = gsap.to(_eh, {
                 x: function () { return -_getDx(); },
                 ease: 'none',
                 scrollTrigger: {
@@ -315,6 +325,7 @@ window.scrollTo(0, 0);
                   invalidateOnRefresh: true
                 }
               });
+              SnapNav.setEnvPin(_envTween.scrollTrigger);
               var _df = document.querySelector('.envio-fondo');
               if (_df) {
                 gsap.set(_df, { x: 0 });
