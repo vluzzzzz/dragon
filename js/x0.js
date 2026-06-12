@@ -39,15 +39,15 @@ var SnapNav = (function () {
     var el = document.querySelector('.prod-title-wrap');
     if (el && (window.scrollY || 0) < 5) prodTitleTop = Math.round(el.getBoundingClientRect().top);
   }
+  var PROD_OFFSET = 256; // calibrado en CELU REAL (titulo en 956 -> ancla 700). PERILLA
   function anchors() {
     if (!prodTitleTop) measureProd();
     var vh = _vhRef || (_vhRef = window.innerHeight);
-    // Productos: atado a la posicion REAL del titulo (escala con cualquier
-    // pantalla). 188 = calibracion del punto bueno (titulo en 888 -> ancla 700).
-    var prod = prodTitleTop ? (prodTitleTop - 188) : Math.round(lin(vh, 932, 740, 760, 700));
+    var prod = prodTitleTop ? (prodTitleTop - PROD_OFFSET) : Math.round(lin(vh, 932, 740, 760, 700));
     var env = Math.round(lin(vh, 932, 1387, 760, 1234));
     return [0, prod, env];
   }
+  function prodTop() { return prodTitleTop; }
   function blocked() {
     if (_catOpen || _ventajasOpen) return true;
     var pp = document.getElementById('ppage');
@@ -159,7 +159,7 @@ var SnapNav = (function () {
   }
   return {
     init: init, attach: attach, goTo: goTo, release: release, reengage: reengage,
-    anchors: anchors, setEnvPin: setEnvPin, goCatalogo: goCatalogo,
+    anchors: anchors, setEnvPin: setEnvPin, goCatalogo: goCatalogo, prodTop: prodTop,
     active: function () { return enabled; },
     isFrozen: function () { return frozen; },
     isAnimating: function () { return animating; },
@@ -168,7 +168,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-9';
+var BUILD = '2026-06-12-10';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -184,12 +184,12 @@ var BUILD = '2026-06-12-9';
     var sec = rectOf('.envio-section');
     var rd = rectOf('.rueda-der');
     var cut = rd ? Math.round(rd.bottom - vvh) : '?';
+    var A = SnapNav.anchors();
     bar.textContent =
       'BUILD ' + BUILD + ' | y=' + Math.round(window.scrollY)
       + ' | vh=' + window.innerHeight + ' visible=' + vvh + ' (barra ' + (window.innerHeight - vvh) + ')'
-      + '\nseccion top=' + (sec ? Math.round(sec.top) : '?')
-      + ' | rueda fondo=' + (rd ? Math.round(rd.bottom) : '?')
-      + ' | rueda ' + (rd && rd.bottom > vvh ? 'CORTADA ' + cut + 'px' : 'OK');
+      + '\ntituloDoc=' + SnapNav.prodTop() + ' | anclas=[' + A.join(',') + ']'
+      + ' | rueda ' + (rd && rd.bottom > vvh ? 'CORTADA' : 'OK');
   }
   setInterval(paint, 200);
   paint();
