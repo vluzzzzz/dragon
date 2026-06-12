@@ -195,15 +195,12 @@ window.scrollTo(0, 0);
             (function _gestureSnap() {
               if (window.innerWidth > 768 || _DEV) return; // en dev: scroll libre para medir
               var animating = false, sx = 0, sy = 0;
+              // Anclas medidas por el usuario, relativas al alto de pantalla
+              // (medido en vh=932: productos=740, envio=1387) para que se
+              // adapten a otros celulares. >>> PERILLA: estos 2 factores.
               function anchors() {
-                var prod = s3._st ? s3._st.end : window.innerHeight;
-                var env = prod + window.innerHeight;
-                var all = ScrollTrigger.getAll();
-                for (var i = 0; i < all.length; i++) {
-                  var t = all[i];
-                  if (t.pin && t.pin.classList && t.pin.classList.contains('envio-section')) { env = t.start; break; }
-                }
-                return [0, Math.round(prod), Math.round(env)];
+                var vh = window.innerHeight;
+                return [0, Math.round(0.794 * vh), Math.round(1.488 * vh)];
               }
               function blocked() {
                 if (_catOpen || _ventajasOpen) return true;
