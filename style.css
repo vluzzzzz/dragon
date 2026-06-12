@@ -1661,9 +1661,9 @@ nav.no-glass {
   .envio-item h2 { font-size: clamp(42px, 14vw, 150px); }
   /* (--carro-scale ahora se controla desde el PANEL DE CONTROL de arriba) */
   .envio-img { height: 50px; }
-  .envio-item-logo { position: relative; --logo-w: 520px; --logo-x: 0px; --logo-y: -114px; }
+  .envio-item-logo { position: relative; --logo-w: 520px; --logo-x: 126px; --logo-y: -114px; }
   .envio-logo-img { position: absolute; top: 50%; left: 50%; width: var(--logo-w, 400px); height: auto; transform: translate(calc(-50% + var(--logo-x, 0px)), calc(-50% + var(--logo-y, 0px))); pointer-events: none; }
-  .envio-item-img { position: relative; --img2-w: 815px; --img2-x: 0px; --img2-y: -22px; }
+  .envio-item-img { position: relative; --img2-w: 815px; --img2-x: 220px; --img2-y: -22px; }
   .envio-item-img-tag { position: absolute; top: 50%; left: 50%; width: var(--img2-w, 200px); height: auto; transform: translate(calc(-50% + var(--img2-x, 0px)), calc(-50% + var(--img2-y, 0px))); pointer-events: none; }
 
   .intro-ticker-track span,

@@ -123,7 +123,6 @@ window.scrollTo(0, 0);
                   end: _envEnd,
                   pin: '.envio-section',
                   pinSpacing: true,
-                  anticipatePin: 1,
                   scrub: 1,
                   invalidateOnRefresh: true
                 }
@@ -167,7 +166,7 @@ window.scrollTo(0, 0);
             if (_rw.length) {
               gsap.set(_rw, { rotation: 0 });
               gsap.to(_rw, {
-                rotation: 1080,
+                rotation: 3600,
                 scrollTrigger: {
                   trigger: '.envio-section',
                   start: 'top top',
