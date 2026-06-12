@@ -141,9 +141,16 @@ var SnapNav = (function () {
     freeze();
   }
   function setEnvPin(st) { envPinSt = st; }
+  function goCatalogo() {
+    if (!s1._l) return;
+    if (enabled) { animating = false; frozen = false; s1._l.start(); }
+    var target = envPinSt ? envPinSt.end : null;
+    if (target == null) { s1._l.scrollTo('.envio-section', { offset: window.innerHeight * 1.5, duration: 1.2, force: true }); return; }
+    s1._l.scrollTo(target, { duration: 1.2, force: true, easing: function (t) { return 1 - Math.pow(1 - t, 3); } });
+  }
   return {
     init: init, attach: attach, goTo: goTo, release: release, reengage: reengage,
-    anchors: anchors, setEnvPin: setEnvPin,
+    anchors: anchors, setEnvPin: setEnvPin, goCatalogo: goCatalogo,
     active: function () { return enabled; },
     isFrozen: function () { return frozen; },
     isAnimating: function () { return animating; },
@@ -152,7 +159,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-7';
+var BUILD = '2026-06-12-8';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -177,50 +184,6 @@ var BUILD = '2026-06-12-7';
   }
   setInterval(paint, 200);
   paint();
-})();
-
-(function _downArrows() {
-  if (window.innerWidth > 768) return;
-  function go(i) {
-    if (SnapNav.active()) { SnapNav.goTo(i); return; }
-    var A = SnapNav.anchors();
-    if (s1._l) s1._l.scrollTo(A[i], { duration: 0.8, force: true });
-    else window.scrollTo({ top: A[i], behavior: 'smooth' });
-  }
-  var cta = document.getElementById('cta');
-  if (cta) {
-    cta.style.pointerEvents = 'auto';
-    cta.style.cursor = 'pointer';
-    cta.addEventListener('click', function () {
-      if (cta.style.opacity === '0') return; // oculto fuera del hero
-      go(1);
-    });
-  }
-  var arrow = document.createElement('button');
-  arrow.className = 'section-next';
-  arrow.setAttribute('aria-label', 'Bajar a envios');
-  arrow.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;display:block"><path d="M12 5v14M7 15l5 5 5-5"/></svg>';
-  arrow.style.cssText = 'position:absolute;left:50%;z-index:40;width:46px;height:46px;'
-    + 'margin-left:-23px;border-radius:50%;border:1px solid rgba(0,0,0,.12);'
-    + 'background:rgba(255,255,255,.9);color:#111;display:flex;align-items:center;'
-    + 'justify-content:center;cursor:pointer;transition:opacity .3s;'
-    + '-webkit-tap-highlight-color:transparent;box-shadow:0 4px 14px rgba(0,0,0,.12);';
-  document.body.appendChild(arrow);
-  function place() {
-    var A = SnapNav.anchors();
-    arrow.style.top = (A[1] + window.innerHeight - 76) + 'px';
-  }
-  function visible() {
-    var A = SnapNav.anchors();
-    var y = window.scrollY || 0;
-    var on = Math.abs(y - A[1]) < window.innerHeight * 0.45;
-    arrow.style.opacity = on ? '1' : '0';
-    arrow.style.pointerEvents = on ? 'auto' : 'none';
-  }
-  place(); visible();
-  window.addEventListener('resize', function () { place(); visible(); });
-  setInterval(visible, 250);
-  arrow.addEventListener('click', function () { go(2); });
 })();
 
 window.scrollTo(0, 0);
@@ -606,14 +569,10 @@ document.getElementById('catalogoNavBtn').addEventListener('click', function (e)
     return;
   }
   if (_ventajasOpen) {
-    _closeVentajas(function () {
-      if (SnapNav.active()) SnapNav.release();
-      if (s1._l) s1._l.scrollTo('.envio-section', { offset: window.innerHeight * 1.5, duration: 1.5 });
-    });
+    _closeVentajas(function () { SnapNav.goCatalogo(); });
     return;
   }
-  if (SnapNav.active()) SnapNav.release();
-  if (s1._l) s1._l.scrollTo('.envio-section', { offset: window.innerHeight * 1.5, duration: 1.5 });
+  SnapNav.goCatalogo();
 });
 
 var _catProducts = [
