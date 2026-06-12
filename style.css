@@ -1599,15 +1599,15 @@ nav.no-glass {
     /* ════════ PANEL DE CONTROL MOVIL — ajustar X / Y / escala aca ════════ */
 
     /* OJOS del dragon (hero) */
-    --ojos-x: -8px;       /* horizontal: izquierda(-) / derecha(+) */
-    --ojos-y: -37px;      /* vertical: arriba(-) / abajo(+) */
+    --ojos-x: -4px;       /* horizontal: izquierda(-) / derecha(+) */
+    --ojos-y: -13px;      /* vertical: arriba(-) / abajo(+) */
     --ojos-w: 20;         /* ancho (numero relativo, mas grande = mas ancho) */
     --ojos-h: 23;         /* alto (numero relativo) */
 
     /* NUBES (productos destacados) */
-    --nubes-y: 0px;       /* vertical: arriba(-) / abajo(+) */
+    --nubes-y: 55px;       /* vertical: arriba(-) / abajo(+) */
     --nubes-h: 17.4%;     /* tamano de la franja (mas % = mas alta) */
-    --nubes-scale: 1;     /* escala (1 = normal, 1.5 = mas grande) */
+    --nubes-scale: 2;     /* escala (1 = normal, 1.5 = mas grande) */
 
     /* RUEDA IZQUIERDA (envio) */
     --ri-x: 11.2px;       /* horizontal */
@@ -1615,13 +1615,13 @@ nav.no-glass {
     --ri-s: 18px;         /* tamano */
 
     /* RUEDA DERECHA (envio) */
-    --rd-x: 14.3px;       /* horizontal */
-    --rd-y: 5px;          /* vertical */
+    --rd-x: -9px;       /* horizontal */
+    --rd-y: 1px;          /* vertical */
     --rd-s: 18px;         /* tamano */
 
     /* CARRO / AUTO (envio) — la X (recorrido) se ajusta en js/x0.js */
     --carro-y: 100px;     /* vertical: arriba(-) / abajo(+) */
-    --carro-scale: 2.2;   /* tamano */
+    --carro-scale: 5.4;   /* tamano */
   }
 
   .sticky-outer { height: 120vh; }

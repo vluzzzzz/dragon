@@ -5,6 +5,7 @@ import { s4 } from './m/m4.js';
 import { initCart } from './m/cart.js';
 import { initCheckout } from './m/checkout.js';
 import { initLogo3D } from './m/logo3d.js';
+import { initDevControls } from './m/dev-controls.js';
 s1(); s2(); s3(); s4();
 var Cart = initCart();
 Cart.init();
@@ -1101,6 +1102,8 @@ window.ProductModal = ProductModal;
 ProductModal.init();
 
 initLogo3D();
+
+initDevControls();
 
 (function _initBeneficios() {
   var cards = document.querySelectorAll('.beneficio-card');
