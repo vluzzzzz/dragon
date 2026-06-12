@@ -41,11 +41,21 @@ var SnapNav = (function () {
   var sx = 0, sy = 0, startIdx = 0, skipTouch = false, settleTimer = null;
   var _last = ''; // ultimo gesto/decision, para la barra de debug (?debug)
 
-  // Anclas medidas por el usuario (vh=932: productos=740, envio=1387),
-  // relativas al alto de pantalla. >>> PERILLAS: estos 2 factores <<<
+  // Anclas CALIBRADAS por el usuario en dispositivos reales. La pagina
+  // mezcla alturas en vh con pixeles fijos, asi que una proporcion pura
+  // NO calza entre pantallas: interpolamos linealmente entre 2 medidas.
+  //   vh=932 (DevTools): productos=740, envio=1387
+  //   vh=760 (celu real): envio=1234 (medido), productos=700 (PROVISIONAL,
+  //   medir con ?dev en el celu y reemplazar)
+  // El vh se captura UNA vez (la barra de direcciones cambia innerHeight
+  // al ocultarse y moveria las anclas a mitad de sesion).
+  var _vhRef = 0;
+  function lin(vh, v1, y1, v2, y2) { return y1 + (vh - v1) * (y2 - y1) / (v2 - v1); }
   function anchors() {
-    var vh = window.innerHeight;
-    return [0, Math.round(0.794 * vh), Math.round(1.488 * vh)];
+    var vh = _vhRef || (_vhRef = window.innerHeight);
+    return [0,
+      Math.round(lin(vh, 932, 740, 760, 700)),
+      Math.round(lin(vh, 932, 1387, 760, 1234))];
   }
   function blocked() {
     if (_catOpen || _ventajasOpen) return true;
@@ -158,7 +168,7 @@ var SnapNav = (function () {
 window.__SnapNav = SnapNav;
 
 // ── Version del build (bumpear en cada deploy) — visible en la barra de debug
-var BUILD = '2026-06-12-2';
+var BUILD = '2026-06-12-3';
 
 // ── Barra de debug EN PANTALLA: version, scroll en vivo, estado del snap,
 //    contadores de eventos touch, ultimo gesto y errores JS.
