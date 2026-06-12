@@ -7,6 +7,7 @@ import { initCheckout } from './m/checkout.js';
 import { initLogo3D } from './m/logo3d.js';
 import { initDevControls } from './m/dev-controls.js';
 s1(); s2(); s3(); s4();
+window.s1 = s1;
 var Cart = initCart();
 Cart.init();
 window.Cart = Cart;
@@ -193,8 +194,8 @@ window.scrollTo(0, 0);
             //    Ultra liviano: solo touchstart/touchend PASIVOS, sin trabajo
             //    por frame ni preventDefault. Apto para celulares de gama baja.
             (function _gestureSnap() {
-              if (window.innerWidth > 768 || _DEV) return; // en dev: scroll libre para medir
-              var animating = false, sx = 0, sy = 0;
+              if (window.innerWidth > 768 || (_DEV && !/snaptest/.test(location.search))) return; // en dev: scroll libre para medir (?snaptest fuerza ON)
+              var animating = false, sx = 0, sy = 0, startIdx = 0;
               // Anclas medidas por el usuario, relativas al alto de pantalla
               // (medido en vh=932: productos=740, envio=1387) para que se
               // adapten a otros celulares. >>> PERILLA: estos 2 factores.
@@ -207,33 +208,32 @@ window.scrollTo(0, 0);
                 var pp = document.getElementById('ppage');
                 return !!(pp && pp.style.display !== 'none' && getComputedStyle(pp).display !== 'none');
               }
-              function go(dir, A) {
-                if (animating || !s1._l) return;
-                var y = window.scrollY || 0;
-                if (y >= A[2] - 6) return; // en/pasando el envio -> scroll libre
+              function idxAt(y, A) {
                 var bi = 0, bd = Infinity;
                 for (var i = 0; i < 3; i++) { var d = Math.abs(A[i] - y); if (d < bd) { bd = d; bi = i; } }
-                var ni = bi + dir;
-                if (ni < 0 || ni > 2) return;
-                animating = true;
-                s1._l.scrollTo(A[ni], {
-                  duration: 0.8, lock: true, force: true,
-                  easing: function (t) { return 1 - Math.pow(1 - t, 3); },
-                  onComplete: function () { animating = false; }
-                });
+                return bi;
               }
               window.addEventListener('touchstart', function (e) {
                 if (!e.touches || !e.touches[0]) return;
                 sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+                // Seccion ANTES de mover el dedo: clave para que aterrice exacto.
+                startIdx = idxAt(window.scrollY || 0, anchors());
               }, { passive: true });
               window.addEventListener('touchend', function (e) {
                 if (animating || blocked() || !e.changedTouches || !e.changedTouches[0]) return;
-                var A = anchors();
-                if ((window.scrollY || 0) >= A[2] - 6) return;
+                if (startIdx >= 2) return; // arranco en el envio (o pasado) -> scroll libre
                 var dx = sx - e.changedTouches[0].clientX;
                 var dy = sy - e.changedTouches[0].clientY;
                 if (Math.abs(dy) < 30 || Math.abs(dy) < Math.abs(dx)) return; // ignora horizontales (carrusel)
-                go(dy > 0 ? 1 : -1, A);
+                var A = anchors();
+                var ni = startIdx + (dy > 0 ? 1 : -1);
+                if (ni < 0 || ni > 2) return;
+                animating = true;
+                s1._l.scrollTo(A[ni], {
+                  duration: 0.7, force: true,
+                  easing: function (t) { return 1 - Math.pow(1 - t, 3); },
+                  onComplete: function () { animating = false; }
+                });
               }, { passive: true });
             })();
 
