@@ -113,22 +113,22 @@ export function initLogo3D() {
 
   function _kick(d) {
     _spinVel += d;
-    if (_spinVel > 0.45) _spinVel = 0.45;
-    else if (_spinVel < -0.45) _spinVel = -0.45;
+    if (_spinVel > 0.16) _spinVel = 0.16;        // tope más bajo → giro más suave
+    else if (_spinVel < -0.16) _spinVel = -0.16;
   }
 
   if (_isMob) {
     document.addEventListener('scroll', function (e) {
       var el = e.target;
       var y = (el === document || el === window) ? (window.scrollY || 0) : (el.scrollTop || 0);
-      if (_lastSY !== null) _kick((y - _lastSY) * 0.0009);
+      if (_lastSY !== null) _kick((y - _lastSY) * 0.00035);
       _lastSY = y;
     }, { passive: true, capture: true });
 
     window.addEventListener('touchmove', function (e) {
       if (!e.touches || !e.touches.length) return;
       var y = e.touches[0].clientY;
-      if (_lastTY !== null) _kick((_lastTY - y) * 0.0016);
+      if (_lastTY !== null) _kick((_lastTY - y) * 0.0006);
       _lastTY = y;
     }, { passive: true });
     window.addEventListener('touchend', function () { _lastTY = null; });
@@ -149,9 +149,9 @@ export function initLogo3D() {
     if (_isMob) {
       _t += 0.016;
       _spin += _spinVel;
-      _spinVel *= 0.93;
-      var autoY = Math.sin(_t * 0.5) * 0.32;
-      var autoX = Math.sin(_t * 0.4) * 0.10;
+      _spinVel *= 0.95;                          // frena más gradual → más suave
+      var autoY = Math.sin(_t * 0.42) * 0.30;    // vaivén un poco más lento
+      var autoX = Math.sin(_t * 0.34) * 0.10;
       logoGroup.rotation.y = smoothRotY + autoY + _spin;
       logoGroup.rotation.x = smoothRotX + autoX;
     } else {
