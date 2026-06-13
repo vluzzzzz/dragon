@@ -59,6 +59,19 @@ function _applySiteContent(content) {
 // la sección queda en blanco (a propósito).
 var _flyerTimer = null;
 var _flyerNavColor = null;   // 'white' | 'black' | null — lo lee _navWatch
+
+// Compuerta del loader: el loading se mantiene hasta que el contenido (sobre
+// todo el flyer activo) esté listo, así nunca se ve cargar. Tope de 4s por las dudas.
+var _gateResolve;
+var _pageGate = new Promise(function (r) { _gateResolve = r; });
+setTimeout(function () { if (_gateResolve) _gateResolve(); }, 4000);
+function _preloadImg(url) {
+  return new Promise(function (res) {
+    if (!url) { res(); return; }
+    var im = new Image(); im.onload = res; im.onerror = res; im.src = url;
+  });
+}
+
 function _renderFlyers(flyers) {
   var sec = document.getElementById('productos');
   if (!sec) return;
@@ -121,7 +134,7 @@ function _renderFlyers(flyers) {
 
   function resetAuto() {
     if (_flyerTimer) clearInterval(_flyerTimer);
-    if (N > 1) _flyerTimer = setInterval(function () { go(1); }, 10000);
+    if (N > 1) _flyerTimer = setInterval(function () { go(1); }, 20000);
   }
   resetAuto();
 
@@ -142,11 +155,19 @@ function _renderFlyers(flyers) {
 async function _hydrateFeatured() {
   try {
     var data = await _sbContent();
-    if (!data) return;
+    if (!data) { _gateResolve(); return; }
     var camp = data.campaign;
     if (camp && camp.kind === 'flyers') {
+      // Precargar el primer flyer ANTES de mostrarlo y de soltar el loader → sin flash negro.
+      var isMob = window.matchMedia('(max-width: 768px)').matches;
+      var first = (data.flyers || []).map(function (f) {
+        return isMob ? (f.image_mobile_url || f.image_pc_url) : (f.image_pc_url || f.image_mobile_url);
+      }).filter(Boolean)[0];
+      await Promise.race([_preloadImg(first), new Promise(function (r) { setTimeout(r, 3500); })]);
       _renderFlyers(data.flyers);
+      _gateResolve();
     } else {
+      _gateResolve();   // productos: el loader no espera la hidratación (ya hay fallback visible)
       if (camp && camp.title_image_url) {
         var t = document.querySelector('.prod-title-wrap img');
         if (t) t.src = camp.title_image_url;
@@ -154,11 +175,11 @@ async function _hydrateFeatured() {
       if (_renderFeaturedCards(data.items)) { s2(); }
     }
     _applySiteContent(data.content);
-  } catch (e) {}
+  } catch (e) { _gateResolve(); }
 }
 
 s1(); s2(); s3(); s4();
-if (_sbReady()) { _hydrateFeatured(); }
+if (_sbReady()) { _hydrateFeatured(); } else { _gateResolve(); }
 window.s1 = s1;
 var Cart = initCart();
 Cart.init();
@@ -323,7 +344,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-22';
+var BUILD = '2026-06-13-23';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -530,6 +551,7 @@ window.scrollTo(0, 0);
   });
   _ldr.to(_obj, { v: 50, duration: 0.7, ease: 'none' })
       .to(_obj, { v: 85, duration: 1.0, ease: 'power1.in' })
+      .addPause('+=0', function () { _pageGate.then(function () { _ldr.play(); }); })
       .to(_obj, { v: 100, duration: 1.2, ease: 'power2.in' });
 })();
 
