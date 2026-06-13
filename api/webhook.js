@@ -1,3 +1,4 @@
+const { MercadoPagoConfig, Payment } = require('mercadopago');
 const { Resend } = require('resend');
 const posthog = require('../lib/posthog');
 
@@ -49,48 +50,57 @@ function buildEmailHtml({ customer, items, total, paymentId, status }) {
 
 module.exports = async (req, res) => {
   try {
-    const { type, data, external_reference, payment_id, status } = req.body;
+    // MercadoPago avisa con { type:'payment', data:{ id } } (o por query). NO manda
+    // los datos del pedido: hay que consultar el pago por ID para obtenerlos.
+    const body = req.body || {};
+    const query = req.query || {};
+    const type = body.type || body.topic || query.type || query.topic;
+    const paymentId = (body.data && body.data.id) || body.id || query.id || query['data.id'];
 
-    const paymentData = external_reference ? JSON.parse(external_reference) : null;
-    const paymentId = payment_id || data?.id || '—';
-    const paymentStatus = status || 'approved';
+    if (type && type !== 'payment') return res.status(200).end();
+    if (!paymentId) { console.log('webhook sin payment id'); return res.status(200).end(); }
 
-    if (!paymentData) {
-      console.log('webhook received — no external_reference, skipping email');
-      return res.status(200).end();
-    }
+    const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
+    const payment = await new Payment(client).get({ id: paymentId });
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const status = payment.status;   // approved | pending | rejected | ...
+    const orderData = payment.external_reference ? JSON.parse(payment.external_reference) : null;
+    if (!orderData) { console.log('pago sin external_reference', paymentId); return res.status(200).end(); }
 
     posthog.capture({
-      distinctId: paymentData.customer.email,
-      event: 'order_completed',
+      distinctId: orderData.customer.email,
+      event: status === 'approved' ? 'order_completed' : 'order_' + status,
       properties: {
-        payment_id: paymentId,
-        payment_status: paymentStatus,
-        item_count: paymentData.items.length,
-        total_amount: paymentData.total,
+        payment_id: payment.id,
+        payment_status: status,
+        item_count: orderData.items.length,
+        total_amount: orderData.total,
         currency: 'CLP',
       },
     });
 
-    await resend.emails.send({
-      from: 'Pedidos <onboarding@resend.dev>',
-      to: process.env.NOTIFICATION_EMAIL,
-      subject: `🛒 Nuevo Pedido - $${Number(paymentData.total).toLocaleString('es-CL')}`,
-      html: buildEmailHtml({
-        customer: paymentData.customer,
-        items: paymentData.items,
-        total: paymentData.total,
-        paymentId,
-        status: paymentStatus,
-      }),
-    });
+    // Email del pedido solo cuando el pago quedó APROBADO.
+    if (status === 'approved') {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'Pedidos <onboarding@resend.dev>',
+        to: process.env.NOTIFICATION_EMAIL,
+        subject: `🛒 Nuevo Pedido - ${formatCLP(orderData.total)}`,
+        html: buildEmailHtml({
+          customer: orderData.customer,
+          items: orderData.items,
+          total: orderData.total,
+          paymentId: payment.id,
+          status,
+        }),
+      });
+      console.log('email enviado para pago', payment.id);
+    }
 
-    console.log('email sent for payment', paymentId);
+    try { await posthog.flush(); } catch (e) {}
     res.status(200).end();
   } catch (err) {
     console.error('webhook error:', err);
-    res.status(200).end();
+    res.status(200).end();   // siempre 200 para que MP no reintente en loop
   }
 };

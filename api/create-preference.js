@@ -50,7 +50,8 @@ module.exports = async (req, res) => {
         total,
       }),
       auto_return: 'approved',
-      purpose: 'wallet_purchase',
+      // Sin 'purpose: wallet_purchase' → permite pagar como INVITADO (con tarjeta,
+      // sin cuenta de MercadoPago) además de con cuenta.
     };
 
     const result = await preference.create({ body });
