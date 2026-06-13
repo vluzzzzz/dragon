@@ -222,13 +222,14 @@ nav.no-glass {
 
 .nav-links a {
   text-decoration: none;
-  color: #444;
+  color: #fff;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   transition: color 0.25s ease;
 }
 
-.nav-links a:hover { color: #111; }
+.nav-links a:hover { color: #fff; opacity: 0.82; }
 
 .nav-cart-btn {
   position: absolute;
@@ -250,11 +251,12 @@ nav.no-glass {
 .nav-cart-btn svg {
   width: 20px;
   height: 20px;
-  color: #444;
+  color: #fff;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35));
   transition: color 0.25s ease;
 }
 
-.nav-cart-btn:hover svg { color: #111; }
+.nav-cart-btn:hover svg { color: #fff; opacity: 0.82; }
 
 .cart-count {
   position: absolute;
@@ -1982,8 +1984,8 @@ nav.no-glass {
   z-index: 3;
   padding-top: 64px;
 }
-.beneficios-header .productos-subtitulo { color: #1b6f96; }
-.beneficios-header .productos-titulo { color: #0d3b52; }
+.beneficios-header .productos-subtitulo { color: #fff; text-shadow: 0 2px 8px rgba(11, 59, 82, 0.35); }
+.beneficios-header .productos-titulo { color: #fff; text-shadow: 0 3px 14px rgba(11, 59, 82, 0.45); }
 .logo3d-wrap {
   --logo3d-x: 0px;
   --logo3d-y: 0px;
@@ -2148,12 +2150,13 @@ nav.no-glass {
 @media (max-width: 768px) {
   .beneficios-header { padding-top: 48px; }
   .logo3d-wrap { max-width: 100%; height: 280px; }
-  .signpost { --sp-h: 560px; max-width: 100%; }
-  .signpost-tubo { --tubo-h: 520px; }
-  .signpost-card[data-key="precio"]   { --x: -88px; --y: 30px;  --w: 175px; }
-  .signpost-card[data-key="envio"]    { --x: 90px;  --y: 160px; --w: 175px; }
-  .signpost-card[data-key="stock"]    { --x: -88px; --y: 290px; --w: 175px; }
-  .signpost-card[data-key="atencion"] { --x: 90px;  --y: 420px; --w: 175px; }
+  .beneficios-section { --fondo-y: -600px; --fondo-zoom: 100%; }
+  .signpost { --sp-h: 880px; max-width: 100%; }
+  .signpost-tubo { --tubo-x: 0px; --tubo-y: -202px; --tubo-h: 915px; }
+  .signpost-card[data-key="precio"]   { --x: -122px; --y: 110px; --w: 390px; --r: -3deg; }
+  .signpost-card[data-key="envio"]    { --x: 92px;  --y: 364px; --w: 400px; --r: 3deg; }
+  .signpost-card[data-key="stock"]    { --x: -88px; --y: 600px; --w: 175px; }
+  .signpost-card[data-key="atencion"] { --x: 90px;  --y: 740px; --w: 175px; }
   .catalogo-cta-wrap { padding: 0 16px 24px; }
   .catalogo-cta-btn { font-size: 18px; padding: 12px 28px; }
   .contacto-section-dune { padding: 72px 16px; }
