@@ -8,8 +8,8 @@
 //  (usa el contenido hardcodeado como fallback). No se rompe nada.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const SUPABASE_URL = '';        // ej: 'https://abcdxyz.supabase.co'
-export const SUPABASE_ANON_KEY = '';   // ej: 'eyJhbGciOi...'
+export const SUPABASE_URL = 'https://bolhusdvtrqqhypwjiqy.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_dY7DndPy7906u5LJKV_eFw_W_tLfSLg';
 
 export function isConfigured() {
   return !!(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL.indexOf('http') === 0);

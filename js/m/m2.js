@@ -1,3 +1,4 @@
+var _inst = null, _wired = false;   // permiten re-ejecutar s2() tras hidratar
 export function s2() {
   'use strict';
   var _s = document.getElementById('cardStage');
@@ -57,7 +58,6 @@ export function s2() {
     card.addEventListener('click', function () {
       if (_dr) return;
       var pos = _o.indexOf(parseInt(card.dataset.idx));
-      console.log('CLICK CARRUSEL', { pos: pos, idx: card.dataset.idx, _o: _o, hasPM: !!window.ProductModal });
       if (pos === 0 && window.ProductModal) {
         window.ProductModal.openFromCarousel(card);
         return;
@@ -70,13 +70,21 @@ export function s2() {
   function _sd(e, x) { if (_an) return; _sx = x; _lx = x; _dr = true; _s.classList.add('dragging'); document.body.style.userSelect = 'none'; document.body.style.webkitUserSelect = 'none'; }
   function _md(e, x) { if (!_dr) return; var d = x - _lx; if (d < -_st) { _sw('left'); _lx = x; } else if (d > _st) { _sw('right'); _lx = x; } }
   function _ed() { if (!_dr) return; _dr = false; _s.classList.remove('dragging'); document.body.style.userSelect = ''; document.body.style.webkitUserSelect = ''; }
-  _s.addEventListener('mousedown', function (e) { e.preventDefault(); _sd(e, e.clientX); });
-  _s.addEventListener('touchstart', function (e) { _sd(e, e.touches[0].clientX); }, { passive: false });
-  window.addEventListener('mousemove', function (e) { _md(e, e.clientX); });
-  _s.addEventListener('touchmove', function (e) { _md(e, e.touches[0].clientX); }, { passive: false });
-  window.addEventListener('mouseup', _ed);
-  _s.addEventListener('touchend', _ed);
-  _s.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+  // Los listeners de arrastre se registran UNA vez y delegan en la instancia
+  // activa (_inst). Así s2() puede re-ejecutarse tras hidratar desde Supabase
+  // sin duplicar handlers ni quedar apuntando a cards viejas.
+  _inst = { sd: _sd, md: _md, ed: _ed };
+  if (!_wired) {
+    _wired = true;
+    _s.addEventListener('mousedown', function (e) { e.preventDefault(); if (_inst) _inst.sd(e, e.clientX); });
+    _s.addEventListener('touchstart', function (e) { if (_inst) _inst.sd(e, e.touches[0].clientX); }, { passive: false });
+    _s.addEventListener('touchmove', function (e) { if (_inst) _inst.md(e, e.touches[0].clientX); }, { passive: false });
+    _s.addEventListener('touchend', function () { if (_inst) _inst.ed(); });
+    _s.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    window.addEventListener('mousemove', function (e) { if (_inst) _inst.md(e, e.clientX); });
+    window.addEventListener('mouseup', function () { if (_inst) _inst.ed(); });
+  }
 
   _i();
 }

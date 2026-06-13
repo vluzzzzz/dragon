@@ -20,7 +20,7 @@ function _esc(s) {
 // usa exactamente 5 slots, así que si no hay 5 items dejamos el HTML fijo.
 function _renderFeaturedCards(items) {
   var stage = document.getElementById('cardStage');
-  if (!stage || !items || items.length !== 5) return;
+  if (!stage || !items || items.length !== 5) return false;
   var colorImg = { rosa: './images/card-rosa.webp', amarillo: './images/card-amarilla.webp', celeste: './images/card-celeste.webp' };
   var html = '';
   items.forEach(function (it, i) {
@@ -36,6 +36,7 @@ function _renderFeaturedCards(items) {
       + '</div><div class="card-arrow"><img src="./images/flecha.png" alt="" draggable="false"></div></div>';
   });
   stage.innerHTML = html;
+  return true;
 }
 
 // Aplica textos editables a cualquier elemento con [data-content-id].
@@ -49,24 +50,25 @@ function _applySiteContent(content) {
   });
 }
 
+// No bloquea el arranque: la web pinta el contenido fijo y, cuando llegan los
+// datos de Supabase, se reemplazan las cards y se re-inicializa el carrusel
+// (s2 es re-ejecutable). Si tarda, queda visible detrás del loader; si falla,
+// se queda el contenido fijo. Sin carrera contra reloj.
 async function _hydrateFeatured() {
   try {
-    var data = await Promise.race([
-      _sbContent(),
-      new Promise(function (res) { setTimeout(function () { res(null); }, 700); })
-    ]);
+    var data = await _sbContent();
     if (!data) return;
     if (data.campaign && data.campaign.title_image_url) {
       var t = document.querySelector('.prod-title-wrap img');
       if (t) t.src = data.campaign.title_image_url;
     }
-    _renderFeaturedCards(data.items);
+    if (_renderFeaturedCards(data.items)) { s2(); }
     _applySiteContent(data.content);
   } catch (e) {}
 }
 
-if (_sbReady()) { await _hydrateFeatured(); }
 s1(); s2(); s3(); s4();
+if (_sbReady()) { _hydrateFeatured(); }
 window.s1 = s1;
 var Cart = initCart();
 Cart.init();
@@ -231,7 +233,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-18';
+var BUILD = '2026-06-13-19';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
