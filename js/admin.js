@@ -53,6 +53,21 @@ function uniqueBy(arr, keyFn) {
   return out;
 }
 
+// Control segmentado (pills) — reemplaza los <select> feos del navegador.
+function segHtml(cls, options, current) {
+  return '<div class="seg ' + cls + '">' + options.map(o =>
+    '<button type="button" class="seg-btn' + (o.v === current ? ' active' : '') + '" data-v="' + o.v + '">' + o.l + '</button>'
+  ).join('') + '</div>';
+}
+function wireSeg(seg) {
+  $$('.seg-btn', seg).forEach(b => b.onclick = () => {
+    $$('.seg-btn', seg).forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+  });
+}
+const segVal = (seg) => { const a = $('.seg-btn.active', seg); return a ? a.dataset.v : ''; };
+const segSet = (seg, v) => $$('.seg-btn', seg).forEach(b => b.classList.toggle('active', b.dataset.v === v));
+
 async function uploadImage(file, folder) {
   const ext = (file.name.split('.').pop() || 'png').toLowerCase();
   const path = folder + '/' + Date.now() + '-' + Math.random().toString(36).slice(2) + '.' + ext;
@@ -134,15 +149,19 @@ async function renderCampaigns() {
   view.appendChild(top);
 
   camps.forEach(c => {
+    const isFlyers = (c.kind || (c.is_default ? 'products' : 'flyers')) === 'flyers';
     const item = document.createElement('div');
     item.className = 'card-item';
     item.innerHTML = '<div class="item-head"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="item-title">' + esc(c.name) + '</span>'
       + (c.is_active ? '<span class="badge">ACTIVA</span>' : '')
-      + (c.is_default ? '<span class="pill-mut">default</span>' : '')
+      + (c.is_default ? '<span class="pill-mut">default · productos</span>' : '<span class="pill-mut">flyers</span>')
       + '</div><div class="row" style="flex:0 0 auto"></div></div>';
     const btns = $('.row', item);
     if (!c.is_active) { const a = document.createElement('button'); a.className = 'btn btn-sm'; a.textContent = 'Activar'; a.onclick = () => activateCampaign(c.id); btns.appendChild(a); }
-    const e = document.createElement('button'); e.className = 'btn-ghost btn-sm'; e.textContent = 'Editar destacados'; e.onclick = () => toggleEditor(item, c); btns.appendChild(e);
+    const e = document.createElement('button'); e.className = 'btn-ghost btn-sm';
+    e.textContent = isFlyers ? 'Editar flyers' : 'Editar destacados';
+    e.onclick = () => isFlyers ? toggleFlyerEditor(item, c) : toggleEditor(item, c);
+    btns.appendChild(e);
     const d = document.createElement('button'); d.className = 'btn-ghost btn-sm'; d.textContent = 'Duplicar'; d.onclick = () => duplicateCampaign(c, camps); btns.appendChild(d);
     if (!c.is_default) { const x = document.createElement('button'); x.className = 'btn-danger btn-sm'; x.textContent = 'Eliminar'; x.onclick = () => deleteCampaign(c); btns.appendChild(x); }
     view.appendChild(item);
@@ -158,17 +177,22 @@ async function activateCampaign(id) {
 async function createCampaign(camps) {
   const name = prompt('Nombre de la temporada (ej: Navidad, Black Friday):');
   if (!name) return;
-  const { data, error } = await sb.from('campaigns').insert({ name, sort_order: camps.length }).select().single();
-  if (error) { fail('Error al crear'); return; }
-  const src = camps.find(c => c.is_default) || camps.find(c => c.is_active) || camps[0];
-  src ? await cloneItems(src.id, data.id) : await seedBlankItems(data.id);
-  ok('Temporada creada'); renderCampaigns();
+  // Las temporadas nuevas son tipo "flyers": empiezan en blanco (el cliente sube sus banners).
+  const { error } = await sb.from('campaigns').insert({ name, kind: 'flyers', sort_order: camps.length });
+  error ? fail('Error al crear') : ok('Temporada creada · agregale sus flyers');
+  if (!error) renderCampaigns();
 }
 async function duplicateCampaign(c, camps) {
-  const { data, error } = await sb.from('campaigns').insert({ name: c.name + ' (copia)', sort_order: camps.length }).select().single();
+  const kind = c.kind || (c.is_default ? 'products' : 'flyers');
+  const { data, error } = await sb.from('campaigns').insert({ name: c.name + ' (copia)', kind, sort_order: camps.length }).select().single();
   if (error) { fail('Error al duplicar'); return; }
-  await cloneItems(c.id, data.id);
+  kind === 'flyers' ? await cloneFlyers(c.id, data.id) : await cloneItems(c.id, data.id);
   ok('Temporada duplicada'); renderCampaigns();
+}
+async function cloneFlyers(fromId, toId) {
+  const { data } = await sb.from('campaign_flyers').select('*').eq('campaign_id', fromId).order('position');
+  const rows = (data || []).map(r => { const o = Object.assign({}, r); delete o.id; o.campaign_id = toId; return o; });
+  if (rows.length) await sb.from('campaign_flyers').upsert(rows, { onConflict: 'campaign_id,position' });
 }
 async function deleteCampaign(c) {
   if (!confirm('¿Eliminar la temporada "' + c.name + '"?')) return;
@@ -244,6 +268,62 @@ async function toggleEditor(itemEl, c) {
   editor.appendChild(save);
 }
 
+// Editor de FLYERS (temporadas tipo banners full-screen)
+async function toggleFlyerEditor(itemEl, c) {
+  let editor = itemEl.querySelector('.featured-editor');
+  if (editor) { editor.remove(); return; }
+  editor = document.createElement('div');
+  editor.className = 'featured-editor sub';
+  editor.innerHTML = '<div class="spinner">Cargando flyers…</div>';
+  itemEl.appendChild(editor);
+
+  const { data } = await sb.from('campaign_flyers').select('*').eq('campaign_id', c.id).order('position');
+  const flyers = data || [];
+  editor.innerHTML = '';
+
+  const info = document.createElement('div'); info.className = 'panel';
+  info.innerHTML = '<div class="item-title" style="margin-bottom:6px">Flyers de la temporada</div>'
+    + '<p class="mut" style="margin:0">Imágenes a pantalla completa que rotan solas como carrusel. <b>Es obligatorio subir la versión PC y la de celular</b> de cada flyer.</p>'
+    + '<p class="mut" style="margin:8px 0 0">Tamaño recomendado — <b>PC: 1920×1080</b> (horizontal) · <b>Celular: 1080×1920</b> (vertical, tipo historia de IG).</p>';
+  editor.appendChild(info);
+
+  const list = document.createElement('div'); list.className = 'flyer-list'; editor.appendChild(list);
+  function addFlyer(f) {
+    f = f || {};
+    const r = document.createElement('div'); r.className = 'panel flyer-row';
+    r.innerHTML = '<div class="row"><div class="field"><label>Imagen PC · 1920×1080</label><div class="upload-row"><img class="thumb fl-pc-prev" src="' + esc(f.image_pc_url || '') + '"><input type="text" class="fl-pc" value="' + esc(f.image_pc_url || '') + '" placeholder="URL PC"><input type="file" accept="image/*" class="fl-pc-file" style="max-width:140px"></div></div></div>'
+      + '<div class="row"><div class="field"><label>Imagen Celular · 1080×1920</label><div class="upload-row"><img class="thumb fl-mo-prev" src="' + esc(f.image_mobile_url || '') + '"><input type="text" class="fl-mo" value="' + esc(f.image_mobile_url || '') + '" placeholder="URL celular"><input type="file" accept="image/*" class="fl-mo-file" style="max-width:140px"></div></div></div>'
+      + '<button class="btn-danger btn-sm">Quitar flyer</button>';
+    r.querySelector('.btn-danger').onclick = () => r.remove();
+    wireUpload($('.fl-pc-file', r), $('.fl-pc', r), $('.fl-pc-prev', r), 'flyers');
+    wireUpload($('.fl-mo-file', r), $('.fl-mo', r), $('.fl-mo-prev', r), 'flyers');
+    list.appendChild(r);
+  }
+  flyers.forEach(addFlyer);
+
+  const addBtn = document.createElement('button'); addBtn.className = 'btn-ghost btn-sm'; addBtn.textContent = '+ Agregar flyer';
+  addBtn.onclick = () => addFlyer({});
+  editor.appendChild(addBtn);
+
+  const save = document.createElement('button'); save.className = 'btn'; save.style.marginLeft = '10px'; save.textContent = 'Guardar flyers';
+  save.onclick = async () => {
+    const rows = []; let invalid = false;
+    $$('.flyer-row', list).forEach((r, idx) => {
+      const pc = $('.fl-pc', r).value.trim(), mo = $('.fl-mo', r).value.trim();
+      if (!pc || !mo) { invalid = true; r.style.outline = '2px solid var(--danger)'; r.style.outlineOffset = '2px'; }
+      else { r.style.outline = ''; }
+      rows.push({ campaign_id: c.id, position: idx, image_pc_url: pc, image_mobile_url: mo });
+    });
+    if (invalid) { fail('Cada flyer necesita imagen PC y celular'); return; }
+    save.disabled = true;
+    await sb.from('campaign_flyers').delete().eq('campaign_id', c.id);
+    const e1 = rows.length ? (await sb.from('campaign_flyers').insert(rows)).error : null;
+    save.disabled = false;
+    e1 ? fail() : ok(rows.length ? 'Flyers guardados' : 'Temporada vacía guardada');
+  };
+  editor.appendChild(save);
+}
+
 // ───────────────────────── Catálogo ─────────────────────────
 async function renderCatalog() {
   const view = $('#view-catalog');
@@ -288,11 +368,11 @@ function productCard(p) {
     '<div class="item-head"><span class="item-title c-title">' + esc(p.name) + '</span><span class="pill-mut">' + esc(p.feature_key) + '</span></div>'
     + '<div class="field"><label>Nombre</label><input class="c-name" value="' + esc(p.name) + '"></div>'
     + '<div class="row"><div class="field"><label>Precio</label><input class="c-price" value="' + esc(p.price) + '" placeholder="$26.000"></div>'
-    + '<div class="field"><label>Categoría</label><select class="c-cat">' + CATS.map(ct => '<option value="' + ct.v + '"' + (ct.v === p.category ? ' selected' : '') + '>' + ct.l + '</option>').join('') + '</select></div></div>'
+    + '<div class="field"><label>Categoría</label>' + segHtml('c-cat', CATS.map(ct => ({ v: ct.v, l: ct.l })), p.category) + '</div></div>'
     + '<div class="field"><label>Descripción</label><textarea class="c-desc" rows="2">' + esc(p.descr || '') + '</textarea></div>'
     + '<div class="field"><label>Imagen principal</label><div class="upload-row"><img class="thumb c-prev" src="' + esc(p.image_url || '') + '"><input type="text" class="c-img" value="' + esc(p.image_url || '') + '" placeholder="URL"><input type="file" accept="image/*" class="c-file" style="max-width:150px"></div></div>'
     + '<div class="row"><div class="field"><label>Escala imagen</label><input type="number" step="0.05" class="c-scale" value="' + (p.img_scale || 0.85) + '"></div>'
-    + '<div class="field"><label>Visible en la web</label><select class="c-vis"><option value="true"' + (p.is_visible ? ' selected' : '') + '>Sí</option><option value="false"' + (!p.is_visible ? ' selected' : '') + '>No</option></select></div></div>'
+    + '<div class="field"><label>Visible en la web</label><label class="switch"><input type="checkbox" class="c-vis"' + (p.is_visible ? ' checked' : '') + '><span class="switch-track"></span></label></div></div>'
     + '<div class="collapse-h c-more">▸ Características, imágenes y colores</div>'
     + '<div class="c-sub hidden"></div>'
     + '<div class="actions-row"><button class="btn c-save">Guardar producto</button>'
@@ -308,11 +388,12 @@ function productCard(p) {
     if (v.descr != null) $('.c-desc', box).value = v.descr;
     if (v.image_url != null) { $('.c-img', box).value = v.image_url; $('.c-prev', box).src = v.image_url; }
     if (v.img_scale != null) $('.c-scale', box).value = v.img_scale;
-    if (v.category != null) $('.c-cat', box).value = v.category;
-    if (v.is_visible != null) $('.c-vis', box).value = String(v.is_visible);
+    if (v.category != null) segSet($('.c-cat', box), v.category);
+    if (v.is_visible != null) $('.c-vis', box).checked = !!v.is_visible;
   };
 
   wireUpload($('.c-file', box), $('.c-img', box), $('.c-prev', box), 'catalog');
+  wireSeg($('.c-cat', box));
   $('.c-more', box).onclick = () => {
     const sub = $('.c-sub', box);
     if (!sub.classList.contains('hidden')) { sub.classList.add('hidden'); return; }
@@ -325,12 +406,12 @@ function productCard(p) {
 
   $('.c-save', box).onclick = async () => {
     const price = $('.c-price', box).value;
-    const category = $('.c-cat', box).value;
+    const category = segVal($('.c-cat', box));
     const upd = {
       feature_key: p.feature_key, name: $('.c-name', box).value, price, raw_price: priceToNum(price),
       category, tag: TAG_FROM_CAT[category] || '', descr: $('.c-desc', box).value,
       image_url: $('.c-img', box).value, img_scale: parseFloat($('.c-scale', box).value) || 0.85,
-      is_visible: $('.c-vis', box).value === 'true'
+      is_visible: $('.c-vis', box).checked
     };
     const { error } = await sb.from('catalog_products').upsert(upd, { onConflict: 'feature_key' });
     if (error) { fail(); return; }

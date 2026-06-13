@@ -19,16 +19,17 @@ export async function loadActiveContent() {
     (contentRes.data || []).forEach(function (r) { content[r.id] = r.value; });
 
     let campaign = (campRes.data && campRes.data[0]) || null;
-    let items = [];
+    let items = [], flyers = [];
     if (campaign) {
-      const itemsRes = await sb
-        .from('featured_items')
-        .select('*')
-        .eq('campaign_id', campaign.id)
-        .order('position', { ascending: true });
-      items = itemsRes.data || [];
+      if (campaign.kind === 'flyers') {
+        const fl = await sb.from('campaign_flyers').select('*').eq('campaign_id', campaign.id).order('position', { ascending: true });
+        flyers = fl.data || [];
+      } else {
+        const itemsRes = await sb.from('featured_items').select('*').eq('campaign_id', campaign.id).order('position', { ascending: true });
+        items = itemsRes.data || [];
+      }
     }
-    return { content: content, campaign: campaign, items: items };
+    return { content: content, campaign: campaign, items: items, flyers: flyers };
   } catch (e) {
     return null;
   }

@@ -54,15 +54,56 @@ function _applySiteContent(content) {
 // datos de Supabase, se reemplazan las cards y se re-inicializa el carrusel
 // (s2 es re-ejecutable). Si tarda, queda visible detrás del loader; si falla,
 // se queda el contenido fijo. Sin carrera contra reloj.
+// Temporada tipo "flyers": reemplaza toda la sección de destacados por un
+// carrusel de banners full-screen (PC vs celular) que rotan. Si no hay flyers,
+// la sección queda en blanco (a propósito).
+var _flyerTimer = null;
+function _renderFlyers(flyers) {
+  var sec = document.getElementById('productos');
+  if (!sec) return;
+  sec.classList.add('flyers-mode');
+  var old = sec.querySelector('.flyer-stage'); if (old) old.remove();
+  if (_flyerTimer) { clearInterval(_flyerTimer); _flyerTimer = null; }
+  if (!flyers || !flyers.length) return;
+  var isMob = window.matchMedia('(max-width: 768px)').matches;
+  var stage = document.createElement('div');
+  stage.className = 'flyer-stage';
+  var html = '', dots = '<div class="flyer-dots">';
+  flyers.forEach(function (f, i) {
+    var url = isMob ? (f.image_mobile_url || f.image_pc_url) : (f.image_pc_url || f.image_mobile_url);
+    if (!url) return;
+    html += '<div class="flyer-slide' + (i === 0 ? ' active' : '') + '"><img src="' + _esc(url) + '" alt="" draggable="false"></div>';
+    dots += '<span class="flyer-dot' + (i === 0 ? ' active' : '') + '"></span>';
+  });
+  dots += '</div>';
+  stage.innerHTML = html + (flyers.length > 1 ? dots : '');
+  sec.appendChild(stage);
+  var slides = stage.querySelectorAll('.flyer-slide');
+  var dotsEls = stage.querySelectorAll('.flyer-dot');
+  if (slides.length > 1) {
+    var idx = 0;
+    _flyerTimer = setInterval(function () {
+      slides[idx].classList.remove('active'); if (dotsEls[idx]) dotsEls[idx].classList.remove('active');
+      idx = (idx + 1) % slides.length;
+      slides[idx].classList.add('active'); if (dotsEls[idx]) dotsEls[idx].classList.add('active');
+    }, 4500);
+  }
+}
+
 async function _hydrateFeatured() {
   try {
     var data = await _sbContent();
     if (!data) return;
-    if (data.campaign && data.campaign.title_image_url) {
-      var t = document.querySelector('.prod-title-wrap img');
-      if (t) t.src = data.campaign.title_image_url;
+    var camp = data.campaign;
+    if (camp && camp.kind === 'flyers') {
+      _renderFlyers(data.flyers);
+    } else {
+      if (camp && camp.title_image_url) {
+        var t = document.querySelector('.prod-title-wrap img');
+        if (t) t.src = camp.title_image_url;
+      }
+      if (_renderFeaturedCards(data.items)) { s2(); }
     }
-    if (_renderFeaturedCards(data.items)) { s2(); }
     _applySiteContent(data.content);
   } catch (e) {}
 }
@@ -233,7 +274,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-20';
+var BUILD = '2026-06-13-21';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;

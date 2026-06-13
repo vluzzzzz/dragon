@@ -14,8 +14,8 @@ insert into site_content (id, value) values
 on conflict (id) do nothing;
 
 -- ── Temporada Default + sus 5 destacados ──
-insert into campaigns (name, is_active, is_default, sort_order)
-select 'Default', true, true, 0
+insert into campaigns (name, is_active, is_default, kind, sort_order)
+select 'Default', true, true, 'products', 0
 where not exists (select 1 from campaigns where is_default);
 
 insert into featured_items (campaign_id, position, name, price, product_image_url, color, feature_key, img_w, img_x, img_y, arrow_w, arrow_x, arrow_y, arrow_r)

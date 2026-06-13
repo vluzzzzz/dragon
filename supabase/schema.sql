@@ -17,12 +17,23 @@ create table if not exists campaigns (
   name            text not null,
   is_active       boolean not null default false,
   is_default      boolean not null default false,
+  kind            text not null default 'flyers',   -- 'products' (Default) | 'flyers'
   title_image_url text,
   sort_order      int not null default 0,
   updated_at      timestamptz not null default now()
 );
 -- Solo una temporada activa a la vez:
 create unique index if not exists one_active_campaign on campaigns (is_active) where is_active;
+
+-- Flyers full-screen (banners PC + celular) de una temporada tipo 'flyers'
+create table if not exists campaign_flyers (
+  id               uuid primary key default gen_random_uuid(),
+  campaign_id      uuid not null references campaigns(id) on delete cascade,
+  position         int  not null,
+  image_pc_url     text,
+  image_mobile_url text,
+  unique (campaign_id, position)
+);
 
 -- ── Los 5 destacados de cada temporada ──────────────────────────────────────
 create table if not exists featured_items (
@@ -107,7 +118,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'site_content','campaigns','featured_items',
+    'site_content','campaigns','featured_items','campaign_flyers',
     'catalog_products','catalog_features','catalog_images','catalog_color_variants'
   ] loop
     execute format('drop policy if exists "public_read" on %I;', t);

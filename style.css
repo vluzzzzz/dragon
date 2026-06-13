@@ -298,6 +298,31 @@ body {
   --arrow-carg-w: 55px; --arrow-carg-x: 0px; --arrow-carg-y: -250px; --arrow-carg-r: 0deg;
 }
 
+/* Temporada "flyers": oculta el carrusel de productos y muestra banners full-screen */
+.productos-section.flyers-mode .prod-bg,
+.productos-section.flyers-mode .nubes-ticker,
+.productos-section.flyers-mode .prod-title-wrap,
+.productos-section.flyers-mode #cardStage { display: none !important; }
+.flyer-stage {
+  position: absolute; inset: 0; z-index: 6;
+  overflow: hidden; background: #0a0a0a;
+}
+.flyer-slide {
+  position: absolute; inset: 0; opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.flyer-slide.active { opacity: 1; }
+.flyer-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.flyer-dots {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 9px; z-index: 7;
+}
+.flyer-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255,255,255,0.45); transition: background 0.3s, transform 0.3s;
+}
+.flyer-dot.active { background: #fff; transform: scale(1.25); }
+
 .productos-section {
   position: relative;
   width: 100%;
