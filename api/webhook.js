@@ -49,37 +49,6 @@ function buildEmailHtml({ customer, items, total, paymentId, status }) {
 }
 
 module.exports = async (req, res) => {
-  const debug = req.query && req.query.debug === '1';
-  const rep = {
-    hasMpToken: !!process.env.MERCADO_PAGO_ACCESS_TOKEN,
-    hasResendKey: !!process.env.RESEND_API_KEY,
-    notificationEmail: process.env.NOTIFICATION_EMAIL || null,
-  };
-  const done = (extra) => {
-    Object.assign(rep, extra || {});
-    if (debug) return res.status(200).json(rep);
-    return res.status(200).end();
-  };
-  // Test directo de Resend (sin MercadoPago): /api/webhook?testmail=1
-  if (req.query && req.query.testmail === '1') {
-    try {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      const r = await resend.emails.send({
-        from: 'Pedidos <onboarding@resend.dev>',
-        to: process.env.NOTIFICATION_EMAIL,
-        subject: '🛒 Test Dune Dragon',
-        html: '<p>Email de prueba del webhook. Si te llegó, Resend funciona.</p>',
-      });
-      return res.status(200).json({
-        testmail: true, to: process.env.NOTIFICATION_EMAIL,
-        emailId: r && r.data ? r.data.id : null,
-        emailError: r && r.error ? (r.error.message || JSON.stringify(r.error)) : null,
-      });
-    } catch (e) {
-      return res.status(200).json({ testmail: true, error: e && (e.message || String(e)) });
-    }
-  }
-
   try {
     // MercadoPago avisa con { type:'payment', data:{ id } } (o por query). NO manda
     // los datos del pedido: hay que consultar el pago por ID para obtenerlos.
@@ -87,19 +56,16 @@ module.exports = async (req, res) => {
     const query = req.query || {};
     const type = body.type || body.topic || query.type || query.topic;
     const paymentId = (body.data && body.data.id) || body.id || query.id || query['data.id'];
-    rep.type = type; rep.paymentId = paymentId || null;
 
-    if (type && type !== 'payment') return done({ skip: 'not a payment notification' });
-    if (!paymentId) return done({ skip: 'no payment id' });
+    if (type && type !== 'payment') return res.status(200).end();
+    if (!paymentId) return res.status(200).end();
 
     const client = new MercadoPagoConfig({ accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN });
     const payment = await new Payment(client).get({ id: paymentId });
 
     const status = payment.status;   // approved | pending | rejected | ...
-    rep.status = status;
     const orderData = payment.external_reference ? JSON.parse(payment.external_reference) : null;
-    rep.hasExternalRef = !!orderData;
-    if (!orderData) return done({ skip: 'payment has no external_reference' });
+    if (!orderData) return res.status(200).end();
 
     posthog.capture({
       distinctId: orderData.customer.email,
@@ -111,9 +77,12 @@ module.exports = async (req, res) => {
     });
 
     // Email del pedido solo cuando el pago quedó APROBADO.
+    // NOTA: 'onboarding@resend.dev' solo entrega al email de tu cuenta Resend.
+    // Cuando la tienda tenga dominio propio: verificalo en Resend, cambiá el 'from'
+    // a algo como 'Pedidos <pedidos@tudominio.cl>' y poné el email del cliente en NOTIFICATION_EMAIL.
     if (status === 'approved') {
       const resend = new Resend(process.env.RESEND_API_KEY);
-      const r = await resend.emails.send({
+      await resend.emails.send({
         from: 'Pedidos <onboarding@resend.dev>',
         to: process.env.NOTIFICATION_EMAIL,
         subject: `🛒 Nuevo Pedido - ${formatCLP(orderData.total)}`,
@@ -122,16 +91,12 @@ module.exports = async (req, res) => {
           paymentId: payment.id, status,
         }),
       });
-      rep.emailId = r && r.data && r.data.id ? r.data.id : null;
-      rep.emailError = r && r.error ? (r.error.message || JSON.stringify(r.error)) : null;
-    } else {
-      rep.emailSkipped = 'status no es approved';
     }
 
     try { await posthog.flush(); } catch (e) {}
-    return done({ ok: true });
+    res.status(200).end();
   } catch (err) {
     console.error('webhook error:', err);
-    return done({ ok: false, error: err && (err.message || String(err)) });
+    res.status(200).end();   // siempre 200 para que MP no reintente en loop
   }
 };

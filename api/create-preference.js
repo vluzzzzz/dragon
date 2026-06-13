@@ -79,9 +79,6 @@ module.exports = async (req, res) => {
     res.json({ init_point: result.init_point, id: result.id });
   } catch (err) {
     console.error('create-preference error:', err);
-    const detail =
-      (err && err.cause && err.cause[0] && (err.cause[0].description || err.cause[0].message)) ||
-      (err && err.message) || 'unknown';
-    res.status(500).json({ error: 'Error al crear preferencia', detail: String(detail), hasToken: !!process.env.MERCADO_PAGO_ACCESS_TOKEN, hasFrontendUrl: !!process.env.FRONTEND_URL });
+    res.status(500).json({ error: 'Error al crear preferencia' });
   }
 };
