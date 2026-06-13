@@ -25,13 +25,15 @@ function _renderFeaturedCards(items) {
   var html = '';
   items.forEach(function (it, i) {
     var cimg = colorImg[it.color] || colorImg.rosa;
-    html += '<div class="prod-card" data-idx="' + i + '" data-color="' + _esc(it.color || 'rosa') + '" data-feature-key="' + _esc(it.feature_key || '') + '"'
+    var oos = it.inStock === false;
+    html += '<div class="prod-card' + (oos ? ' oos' : '') + '" data-idx="' + i + '" data-oos="' + (oos ? '1' : '0') + '" data-color="' + _esc(it.color || 'rosa') + '" data-feature-key="' + _esc(it.feature_key || '') + '"'
       + ' data-pw="' + _esc(it.img_w || '90%') + '" data-px="' + _esc(it.img_x || 0) + '" data-py="' + _esc(it.img_y || 0) + '"'
       + ' data-aw="' + _esc(it.arrow_w || 55) + '" data-ax="' + _esc(it.arrow_x || 0) + '" data-ay="' + _esc(it.arrow_y || -250) + '" data-ar="' + _esc(it.arrow_r || 0) + '">'
       + '<div class="card-inner">'
       + '<img class="card-ploma" src="./images/card-ploma.webp" alt="" draggable="false">'
       + '<img class="card-color" src="' + _esc(cimg) + '" alt="" draggable="false">'
       + '<img class="card-prod" src="' + _esc(it.product_image_url || '') + '" alt="" draggable="false">'
+      + (oos ? '<div class="oos-tag-sm">SIN STOCK</div>' : '')
       + '<div class="card-info"><div class="prod-name">' + _esc(it.name) + '</div><div class="prod-price">' + _esc(it.price) + '</div></div>'
       + '</div><div class="card-arrow"><img src="./images/flecha.png" alt="" draggable="false"></div></div>';
   });
@@ -344,7 +346,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-24';
+var BUILD = '2026-06-13-25';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -1414,6 +1416,7 @@ var ProductModal = (function () {
   }
 
   function openFromCarousel(prodCard) {
+    if (prodCard.dataset.oos === '1') return;   // sin stock: no se abre para comprar
     var _ci = prodCard.querySelector('.card-prod');
     var _key = prodCard.dataset.featureKey;
     var _cat = _catProducts.find(function (x) { return x.featureKey === _key; });

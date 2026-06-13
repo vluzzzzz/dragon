@@ -462,6 +462,29 @@ body {
   overflow: hidden;
 }
 
+/* Destacado sin stock: card del carrusel en gris + cartel diagonal */
+.prod-card.oos .card-prod,
+.prod-card.oos .card-color,
+.prod-card.oos .card-ploma { filter: grayscale(1); }
+.prod-card .oos-tag-sm {
+  position: absolute;
+  top: 44%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-16deg);
+  background: rgba(20,20,22,.86);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: .1em;
+  font-size: 15px;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,.92);
+  box-shadow: 0 6px 18px rgba(0,0,0,.32);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+
 .card-inner img.card-ploma {
   display: block;
   width: 100%;

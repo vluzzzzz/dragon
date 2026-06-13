@@ -31,12 +31,12 @@ export async function loadActiveContent() {
         // vinculado (feature_key) → el catálogo es la fuente de verdad.
         const keys = items.map(function (i) { return i.feature_key; }).filter(Boolean);
         if (keys.length) {
-          const catRes = await sb.from('catalog_products').select('feature_key,name,price').in('feature_key', keys);
+          const catRes = await sb.from('catalog_products').select('feature_key,name,price,is_visible').in('feature_key', keys);
           const map = {};
           (catRes.data || []).forEach(function (p) { map[p.feature_key] = p; });
           items = items.map(function (i) {
             const c = i.feature_key && map[i.feature_key];
-            return c ? Object.assign({}, i, { name: c.name, price: c.price }) : i;
+            return c ? Object.assign({}, i, { name: c.name, price: c.price, inStock: c.is_visible !== false }) : i;
           });
         }
       }
