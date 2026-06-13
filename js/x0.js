@@ -344,7 +344,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-23';
+var BUILD = '2026-06-13-24';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -896,8 +896,9 @@ function _renderCatalogo() {
   if (!_grid) return;
   _grid.innerHTML = '';
   _catProducts.forEach(function (p, i) {
+    var _oos = p.inStock === false;   // sin stock → se muestra en gris + "SIN STOCK"
     var _card = document.createElement('div');
-    _card.className = 'product-card';
+    _card.className = 'product-card' + (_oos ? ' out-of-stock' : '');
     _card.setAttribute('data-name', p.name);
     _card.setAttribute('data-price', p.rawPrice);
     _card.setAttribute('data-desc', p.desc);
@@ -912,9 +913,11 @@ function _renderCatalogo() {
     if (cv) {
       colorDotsHtml = '<div class="card-colors">' + cv.map(function (v) { return '<span class="card-color-dot">' + (v.swatch ? '<img src="' + v.swatch + '" alt="' + v.name + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : '<span style="display:block;width:100%;height:100%;border-radius:50%;background:' + v.hex + '"></span>') + '</span>'; }).join('') + '</div>';
     }
-    _card.innerHTML = '<div class="card-img-wrap">' + imgHtml + '</div><div class="card-info"><p class="card-name">' + p.name + '</p><div class="card-price-row"><p class="card-price">' + p.price + ' <span class="card-unit">c/u</span></p>' + colorDotsHtml + '</div><button class="card-btn">Ver más</button></div>';
+    var _oosTag = _oos ? '<div class="oos-tag">SIN STOCK</div>' : '';
+    var _btn = _oos ? '<button class="card-btn" disabled>Sin stock</button>' : '<button class="card-btn">Ver más</button>';
+    _card.innerHTML = '<div class="card-img-wrap">' + imgHtml + _oosTag + '</div><div class="card-info"><p class="card-name">' + p.name + '</p><div class="card-price-row"><p class="card-price">' + p.price + ' <span class="card-unit">c/u</span></p>' + colorDotsHtml + '</div>' + _btn + '</div>';
     _card.style.setProperty('--card-img-scale', p.imgScale);
-    _card.addEventListener('click', function () { ProductModal.open(_card); });
+    if (!_oos) _card.addEventListener('click', function () { ProductModal.open(_card); });
     _grid.appendChild(_card);
   });
 }

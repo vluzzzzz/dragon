@@ -799,6 +799,32 @@ body {
   transform: translateY(-6px) scale(1.01);
   box-shadow: 0 20px 48px rgba(0,0,0,.11);
 }
+/* Sin stock: se muestra en gris (b/n) con cartel diagonal "SIN STOCK" */
+.product-card.out-of-stock { cursor: default; }
+.product-card.out-of-stock:hover { transform: none; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+.product-card.out-of-stock .card-img-wrap { filter: grayscale(1); }
+.product-card.out-of-stock .card-name,
+.product-card.out-of-stock .card-price { color: #9aa0a6; }
+.product-card.out-of-stock .card-color-dot { filter: grayscale(1); opacity: .7; }
+.product-card.out-of-stock .card-btn { opacity: .55; cursor: default; }
+.product-card .oos-tag {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  background: rgba(20,20,22,.84);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: .14em;
+  font-size: 17px;
+  text-transform: uppercase;
+  padding: 8px 26px;
+  border-radius: 7px;
+  border: 2px solid rgba(255,255,255,.9);
+  box-shadow: 0 8px 22px rgba(0,0,0,.32);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
 .product-card.animating .card-img-wrap img,
 .product-card.animating:hover .card-img-wrap img {
   transform: none !important;

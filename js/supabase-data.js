@@ -27,6 +27,18 @@ export async function loadActiveContent() {
       } else {
         const itemsRes = await sb.from('featured_items').select('*').eq('campaign_id', campaign.id).order('position', { ascending: true });
         items = itemsRes.data || [];
+        // Conectar nombre/precio de cada destacado con el producto del catálogo
+        // vinculado (feature_key) → el catálogo es la fuente de verdad.
+        const keys = items.map(function (i) { return i.feature_key; }).filter(Boolean);
+        if (keys.length) {
+          const catRes = await sb.from('catalog_products').select('feature_key,name,price').in('feature_key', keys);
+          const map = {};
+          (catRes.data || []).forEach(function (p) { map[p.feature_key] = p; });
+          items = items.map(function (i) {
+            const c = i.feature_key && map[i.feature_key];
+            return c ? Object.assign({}, i, { name: c.name, price: c.price }) : i;
+          });
+        }
       }
     }
     return { content: content, campaign: campaign, items: items, flyers: flyers };
@@ -41,8 +53,9 @@ export async function loadCatalog() {
     const sb = await getClient();
     if (!sb) return null;
 
+    // Traemos TODOS (incluido sin stock): is_visible=false ya no oculta, marca "sin stock".
     const [prodRes, featRes, imgRes, colRes] = await Promise.all([
-      sb.from('catalog_products').select('*').eq('is_visible', true).order('sort_order', { ascending: true }),
+      sb.from('catalog_products').select('*').order('sort_order', { ascending: true }),
       sb.from('catalog_features').select('*').order('sort_order', { ascending: true }),
       sb.from('catalog_images').select('*').order('sort_order', { ascending: true }),
       sb.from('catalog_color_variants').select('*').order('sort_order', { ascending: true })
@@ -54,7 +67,8 @@ export async function loadCatalog() {
       return {
         tag: p.tag, name: p.name, price: p.price, rawPrice: p.raw_price,
         desc: p.descr, image: p.image_url, featureKey: p.feature_key,
-        imgScale: Number(p.img_scale) || 0.85, category: p.category
+        imgScale: Number(p.img_scale) || 0.85, category: p.category,
+        inStock: p.is_visible !== false   // false = sin stock (se muestra en gris)
       };
     });
 
