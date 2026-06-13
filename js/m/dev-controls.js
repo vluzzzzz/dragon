@@ -54,6 +54,43 @@ export function initDevControls() {
       { v: '--btn-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 },
       { v: '--btn-scale', label: 'Escala', unit: '', min: 0.4, max: 3, step: 0.05 },
       { v: '--btn-w', label: 'Ancho', unit: 'px', min: 60, max: 400, step: 5 }
+    ]},
+    { title: 'Elegir: Fondo', sel: '.beneficios-section', vars: [
+      { v: '--fondo-y', label: 'Y', unit: 'px', min: -600, max: 600, step: 2 },
+      { v: '--fondo-zoom', label: 'Zoom', unit: '%', min: 40, max: 260, step: 1 }
+    ]},
+    { title: 'Elegir: Logo 3D', sel: '.logo3d-wrap', vars: [
+      { v: '--logo3d-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--logo3d-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 }
+    ]},
+    { title: 'Elegir: Tubo', sel: '.signpost-tubo', vars: [
+      { v: '--tubo-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--tubo-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--tubo-h', label: 'Alto', unit: 'px', min: 200, max: 1000, step: 5 }
+    ]},
+    { title: 'Elegir: Sena Precios', sel: '.signpost-card[data-key="precio"]', vars: [
+      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
+      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
+      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
+    ]},
+    { title: 'Elegir: Sena Envio', sel: '.signpost-card[data-key="envio"]', vars: [
+      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
+      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
+      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
+    ]},
+    { title: 'Elegir: Sena Stock', sel: '.signpost-card[data-key="stock"]', vars: [
+      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
+      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
+      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
+    ]},
+    { title: 'Elegir: Sena Atencion', sel: '.signpost-card[data-key="atencion"]', vars: [
+      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
+      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
+      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
     ]}
   ];
 
