@@ -19,9 +19,10 @@ export function initLogo3D() {
     _visible = true;
   }
 
-  var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+  var _isMob = window.matchMedia('(max-width: 768px)').matches;
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !_isMob });
   renderer.setSize(W, H);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMob ? 1.5 : 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   var scene = new THREE.Scene();
@@ -101,6 +102,37 @@ export function initLogo3D() {
     windY = 0;
   });
 
+  // Solo en celular: movimiento propio + impulso al desplazar (sin mouse).
+  // En PC el logo se mueve unicamente con el mouse.
+  var _t = 0;
+  var _spin = 0;
+  var _spinVel = 0;
+  var _lastSY = null;
+  var _lastTY = null;
+
+  function _kick(d) {
+    _spinVel += d;
+    if (_spinVel > 0.45) _spinVel = 0.45;
+    else if (_spinVel < -0.45) _spinVel = -0.45;
+  }
+
+  if (_isMob) {
+    document.addEventListener('scroll', function (e) {
+      var el = e.target;
+      var y = (el === document || el === window) ? (window.scrollY || 0) : (el.scrollTop || 0);
+      if (_lastSY !== null) _kick((y - _lastSY) * 0.0009);
+      _lastSY = y;
+    }, { passive: true, capture: true });
+
+    window.addEventListener('touchmove', function (e) {
+      if (!e.touches || !e.touches.length) return;
+      var y = e.touches[0].clientY;
+      if (_lastTY !== null) _kick((_lastTY - y) * 0.0016);
+      _lastTY = y;
+    }, { passive: true });
+    window.addEventListener('touchend', function () { _lastTY = null; });
+  }
+
   function animate() {
     requestAnimationFrame(animate);
 
@@ -108,8 +140,19 @@ export function initLogo3D() {
 
     smoothRotY += (windX * LOGO_ROT_Y - smoothRotY) * 0.12;
     smoothRotX += (-windY * LOGO_ROT_X - smoothRotX) * 0.12;
-    logoGroup.rotation.y = smoothRotY;
-    logoGroup.rotation.x = smoothRotX;
+
+    if (_isMob) {
+      _t += 0.016;
+      _spin += _spinVel;
+      _spinVel *= 0.93;
+      var autoY = Math.sin(_t * 0.5) * 0.32;
+      var autoX = Math.sin(_t * 0.4) * 0.10;
+      logoGroup.rotation.y = smoothRotY + autoY + _spin;
+      logoGroup.rotation.x = smoothRotX + autoX;
+    } else {
+      logoGroup.rotation.y = smoothRotY;
+      logoGroup.rotation.x = smoothRotX;
+    }
 
     renderer.render(scene, camera);
   }

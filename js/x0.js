@@ -171,7 +171,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-16';
+var BUILD = '2026-06-12-17';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -404,6 +404,21 @@ window.scrollTo(0, 0);
     if (_cartSvg) _cartSvg.style.color = _white ? '#fff' : '';
   }
   requestAnimationFrame(_navWatch);
+})();
+
+(function _footerLinks() {
+  var bf = document.getElementById('belowFold');
+  if (!bf) return;
+  document.querySelectorAll('.footer-dune-link').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var key = a.getAttribute('data-foot');
+      var target = 0;
+      if (key === 'elegirnos') { var b = document.getElementById('beneficios'); if (b) target = b.offsetTop; }
+      else if (key === 'contacto') { var c = document.getElementById('contacto'); if (c) target = c.offsetTop; }
+      bf.scrollTo({ top: target, behavior: 'smooth' });
+    });
+  });
 })();
 
 document.getElementById('catalogoBtn').addEventListener('click', function () {
