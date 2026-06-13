@@ -4,7 +4,8 @@
   },
   "rewrites": [
     { "source": "/success", "destination": "/success.html" },
-    { "source": "/cancel", "destination": "/cancel.html" }
+    { "source": "/cancel", "destination": "/cancel.html" },
+    { "source": "/admin", "destination": "/admin.html" }
   ],
   "headers": [
     {
@@ -21,6 +22,10 @@
     },
     {
       "source": "/index.html",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }]
+    },
+    {
+      "source": "/admin.html",
       "headers": [{ "key": "Cache-Control", "value": "no-cache, must-revalidate" }]
     }
   ]

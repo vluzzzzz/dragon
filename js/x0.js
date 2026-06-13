@@ -6,6 +6,66 @@ import { initCart } from './m/cart.js';
 import { initCheckout } from './m/checkout.js';
 import { initLogo3D } from './m/logo3d.js';
 import { initDevControls } from './m/dev-controls.js';
+import { isConfigured as _sbReady } from './supabase-config.js';
+import { loadActiveContent as _sbContent, loadCatalog as _sbCatalog } from './supabase-data.js';
+
+// ── Hidratación desde Supabase (con fallback al HTML hardcodeado) ──
+function _esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+// Reescribe #cardStage con las 5 cards de la temporada activa. El carrusel (s2)
+// usa exactamente 5 slots, así que si no hay 5 items dejamos el HTML fijo.
+function _renderFeaturedCards(items) {
+  var stage = document.getElementById('cardStage');
+  if (!stage || !items || items.length !== 5) return;
+  var colorImg = { rosa: './images/card-rosa.webp', amarillo: './images/card-amarilla.webp', celeste: './images/card-celeste.webp' };
+  var html = '';
+  items.forEach(function (it, i) {
+    var cimg = colorImg[it.color] || colorImg.rosa;
+    html += '<div class="prod-card" data-idx="' + i + '" data-color="' + _esc(it.color || 'rosa') + '" data-feature-key="' + _esc(it.feature_key || '') + '"'
+      + ' data-pw="' + _esc(it.img_w || '90%') + '" data-px="' + _esc(it.img_x || 0) + '" data-py="' + _esc(it.img_y || 0) + '"'
+      + ' data-aw="' + _esc(it.arrow_w || 55) + '" data-ax="' + _esc(it.arrow_x || 0) + '" data-ay="' + _esc(it.arrow_y || -250) + '" data-ar="' + _esc(it.arrow_r || 0) + '">'
+      + '<div class="card-inner">'
+      + '<img class="card-ploma" src="./images/card-ploma.webp" alt="" draggable="false">'
+      + '<img class="card-color" src="' + _esc(cimg) + '" alt="" draggable="false">'
+      + '<img class="card-prod" src="' + _esc(it.product_image_url || '') + '" alt="" draggable="false">'
+      + '<div class="card-info"><div class="prod-name">' + _esc(it.name) + '</div><div class="prod-price">' + _esc(it.price) + '</div></div>'
+      + '</div><div class="card-arrow"><img src="./images/flecha.png" alt="" draggable="false"></div></div>';
+  });
+  stage.innerHTML = html;
+}
+
+// Aplica textos editables a cualquier elemento con [data-content-id].
+function _applySiteContent(content) {
+  if (!content) return;
+  document.querySelectorAll('[data-content-id]').forEach(function (el) {
+    var id = el.getAttribute('data-content-id');
+    if (Object.prototype.hasOwnProperty.call(content, id) && content[id] != null && content[id] !== '') {
+      el.textContent = content[id];
+    }
+  });
+}
+
+async function _hydrateFeatured() {
+  try {
+    var data = await Promise.race([
+      _sbContent(),
+      new Promise(function (res) { setTimeout(function () { res(null); }, 700); })
+    ]);
+    if (!data) return;
+    if (data.campaign && data.campaign.title_image_url) {
+      var t = document.querySelector('.prod-title-wrap img');
+      if (t) t.src = data.campaign.title_image_url;
+    }
+    _renderFeaturedCards(data.items);
+    _applySiteContent(data.content);
+  } catch (e) {}
+}
+
+if (_sbReady()) { await _hydrateFeatured(); }
 s1(); s2(); s3(); s4();
 window.s1 = s1;
 var Cart = initCart();
@@ -171,7 +231,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-17';
+var BUILD = '2026-06-13-18';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -709,9 +769,10 @@ var _COLOR_VARIANTS = {
   ]
 };
 
-(function _renderCatalogo() {
+function _renderCatalogo() {
   var _grid = document.getElementById('productosGrid');
   if (!_grid) return;
+  _grid.innerHTML = '';
   _catProducts.forEach(function (p, i) {
     var _card = document.createElement('div');
     _card.className = 'product-card';
@@ -734,7 +795,20 @@ var _COLOR_VARIANTS = {
     _card.addEventListener('click', function () { ProductModal.open(_card); });
     _grid.appendChild(_card);
   });
-})();
+}
+_renderCatalogo();
+
+// Hidrata el catálogo desde Supabase (perezoso: está detrás del reveal "Catálogo").
+if (_sbReady()) {
+  _sbCatalog().then(function (cat) {
+    if (!cat || !cat.products || !cat.products.length) return;
+    _catProducts = cat.products;
+    _FEATURES = cat.features;
+    _PRODUCT_IMAGES = cat.images;
+    _COLOR_VARIANTS = cat.colors;
+    _renderCatalogo();
+  }).catch(function () {});
+}
 
 document.getElementById('productosFiltros').addEventListener('click', function (e) {
   var btn = e.target.closest('.filtro-btn');

@@ -5,6 +5,10 @@ export function s2() {
   var _b = Array.from(document.querySelectorAll('.prod-bg'));
   function _v(name) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0; }
   function _vs(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  // Acepta valor literal ("95%", "-19") O nombre de CSS var ("--p-pro2-w").
+  // Las cards hardcodeadas pasan nombres de var; las cards desde la DB pasan valores literales.
+  function _rs(v) { return (typeof v === 'string' && v.indexOf('--') === 0) ? _vs(v) : (v || ''); }
+  function _rn(v) { return (typeof v === 'string' && v.indexOf('--') === 0) ? _v(v) : (parseFloat(v) || 0); }
   function _p(slot) {
     var S = {
       center: { w: _v('--center-w'), x: _v('--center-x'), y: _v('--center-y'), r: _v('--center-r'), op: _v('--center-op'), z: 10 },
@@ -24,8 +28,8 @@ export function s2() {
     if (ci) gsap.to(ci, { opacity: _c ? 1 : 0, duration: animate ? 0.4 : 0 });
     var pi = card.querySelector('.card-prod');
     if (pi) {
-      var pW = _vs(card.dataset.pw) || '80%';
-      var pX = _v(card.dataset.px); var pY = _v(card.dataset.py);
+      var pW = _rs(card.dataset.pw) || '80%';
+      var pX = _rn(card.dataset.px); var pY = _rn(card.dataset.py);
       pi.style.width = pW;
       pi.style.left = 'calc(50% - ' + pW + ' / 2 + ' + pX + 'px)';
       pi.style.top = 'calc(10% + ' + pY + 'px)';
@@ -33,8 +37,8 @@ export function s2() {
     }
     var ae = card.querySelector('.card-arrow');
     if (ae) {
-      var aW = _v(card.dataset.aw); var aX = _v(card.dataset.ax);
-      var aY = _v(card.dataset.ay); var aR = _v(card.dataset.ar);
+      var aW = _rn(card.dataset.aw); var aX = _rn(card.dataset.ax);
+      var aY = _rn(card.dataset.ay); var aR = _rn(card.dataset.ar);
       var ap = { opacity: _c ? 1 : 0, width: (aW || 55) + 'px', x: -(aW || 55) / 2 + aX, y: p.w * 1.35 * 0.65 + aY, rotation: aR, zIndex: 20 };
       if (animate) gsap.to(ae, Object.assign({}, ap, { duration: D, ease: 'power2.inOut' })); else gsap.set(ae, ap);
     }
