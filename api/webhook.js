@@ -60,6 +60,26 @@ module.exports = async (req, res) => {
     if (debug) return res.status(200).json(rep);
     return res.status(200).end();
   };
+  // Test directo de Resend (sin MercadoPago): /api/webhook?testmail=1
+  if (req.query && req.query.testmail === '1') {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const r = await resend.emails.send({
+        from: 'Pedidos <onboarding@resend.dev>',
+        to: process.env.NOTIFICATION_EMAIL,
+        subject: '🛒 Test Dune Dragon',
+        html: '<p>Email de prueba del webhook. Si te llegó, Resend funciona.</p>',
+      });
+      return res.status(200).json({
+        testmail: true, to: process.env.NOTIFICATION_EMAIL,
+        emailId: r && r.data ? r.data.id : null,
+        emailError: r && r.error ? (r.error.message || JSON.stringify(r.error)) : null,
+      });
+    } catch (e) {
+      return res.status(200).json({ testmail: true, error: e && (e.message || String(e)) });
+    }
+  }
+
   try {
     // MercadoPago avisa con { type:'payment', data:{ id } } (o por query). NO manda
     // los datos del pedido: hay que consultar el pago por ID para obtenerlos.
