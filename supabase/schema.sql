@@ -32,6 +32,7 @@ create table if not exists campaign_flyers (
   position         int  not null,
   image_pc_url     text,
   image_mobile_url text,
+  nav_text_color   text not null default 'white',
   unique (campaign_id, position)
 );
 

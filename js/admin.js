@@ -282,9 +282,14 @@ async function toggleFlyerEditor(itemEl, c) {
   editor.innerHTML = '';
 
   const info = document.createElement('div'); info.className = 'panel';
+  const dlStyle = 'display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 16px;border-radius:980px;font-weight:600;font-size:13px;text-decoration:none';
   info.innerHTML = '<div class="item-title" style="margin-bottom:6px">Flyers de la temporada</div>'
-    + '<p class="mut" style="margin:0">Imágenes a pantalla completa que rotan solas como carrusel. <b>Es obligatorio subir la versión PC y la de celular</b> de cada flyer.</p>'
-    + '<p class="mut" style="margin:8px 0 0">Tamaño recomendado — <b>PC: 1920×1080</b> (horizontal) · <b>Celular: 1080×1920</b> (vertical, tipo historia de IG).</p>';
+    + '<p class="mut" style="margin:0">Imágenes a pantalla completa que rotan como carrusel. <b>Es obligatorio subir la versión PC y la de celular</b> de cada flyer.</p>'
+    + '<div style="background:#fff7e6;border:1.5px solid #ffd47a;border-radius:14px;padding:14px;margin-top:12px">'
+    + '<p style="margin:0 0 10px;font-weight:700;color:#8a5a00">⚠ Obligatorio: descargá las plantillas y diseñá respetando los márgenes marcados.</p>'
+    + '<p class="mut" style="margin:0 0 12px">PC: <b>1920×1080</b> (horizontal) · Celular: <b>1080×1920</b> (vertical, tipo historia de IG). Igual podés subir tu flyer aunque no las descargues.</p>'
+    + '<div class="row"><a class="btn" style="' + dlStyle + '" href="./images/lineamargenpc.png" download>⬇ Plantilla PC</a>'
+    + '<a class="btn" style="' + dlStyle + '" href="./images/lineamargencelu.png" download>⬇ Plantilla Celular</a></div></div>';
   editor.appendChild(info);
 
   const list = document.createElement('div'); list.className = 'flyer-list'; editor.appendChild(list);
@@ -293,10 +298,12 @@ async function toggleFlyerEditor(itemEl, c) {
     const r = document.createElement('div'); r.className = 'panel flyer-row';
     r.innerHTML = '<div class="row"><div class="field"><label>Imagen PC · 1920×1080</label><div class="upload-row"><img class="thumb fl-pc-prev" src="' + esc(f.image_pc_url || '') + '"><input type="text" class="fl-pc" value="' + esc(f.image_pc_url || '') + '" placeholder="URL PC"><input type="file" accept="image/*" class="fl-pc-file" style="max-width:140px"></div></div></div>'
       + '<div class="row"><div class="field"><label>Imagen Celular · 1080×1920</label><div class="upload-row"><img class="thumb fl-mo-prev" src="' + esc(f.image_mobile_url || '') + '"><input type="text" class="fl-mo" value="' + esc(f.image_mobile_url || '') + '" placeholder="URL celular"><input type="file" accept="image/*" class="fl-mo-file" style="max-width:140px"></div></div></div>'
+      + '<div class="field"><label>Color del menú (nav) sobre este flyer</label>' + segHtml('fl-nav', [{ v: 'white', l: 'Blanco' }, { v: 'black', l: 'Negro' }], f.nav_text_color === 'black' ? 'black' : 'white') + '</div>'
       + '<button class="btn-danger btn-sm">Quitar flyer</button>';
     r.querySelector('.btn-danger').onclick = () => r.remove();
     wireUpload($('.fl-pc-file', r), $('.fl-pc', r), $('.fl-pc-prev', r), 'flyers');
     wireUpload($('.fl-mo-file', r), $('.fl-mo', r), $('.fl-mo-prev', r), 'flyers');
+    wireSeg($('.fl-nav', r));
     list.appendChild(r);
   }
   flyers.forEach(addFlyer);
@@ -312,7 +319,7 @@ async function toggleFlyerEditor(itemEl, c) {
       const pc = $('.fl-pc', r).value.trim(), mo = $('.fl-mo', r).value.trim();
       if (!pc || !mo) { invalid = true; r.style.outline = '2px solid var(--danger)'; r.style.outlineOffset = '2px'; }
       else { r.style.outline = ''; }
-      rows.push({ campaign_id: c.id, position: idx, image_pc_url: pc, image_mobile_url: mo });
+      rows.push({ campaign_id: c.id, position: idx, image_pc_url: pc, image_mobile_url: mo, nav_text_color: segVal($('.fl-nav', r)) || 'white' });
     });
     if (invalid) { fail('Cada flyer necesita imagen PC y celular'); return; }
     save.disabled = true;

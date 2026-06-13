@@ -58,36 +58,85 @@ function _applySiteContent(content) {
 // carrusel de banners full-screen (PC vs celular) que rotan. Si no hay flyers,
 // la sección queda en blanco (a propósito).
 var _flyerTimer = null;
+var _flyerNavColor = null;   // 'white' | 'black' | null — lo lee _navWatch
 function _renderFlyers(flyers) {
   var sec = document.getElementById('productos');
   if (!sec) return;
   sec.classList.add('flyers-mode');
   var old = sec.querySelector('.flyer-stage'); if (old) old.remove();
   if (_flyerTimer) { clearInterval(_flyerTimer); _flyerTimer = null; }
+  _flyerNavColor = null;
   if (!flyers || !flyers.length) return;
+
   var isMob = window.matchMedia('(max-width: 768px)').matches;
+  var imgs = [];
+  flyers.forEach(function (f) {
+    var url = isMob ? (f.image_mobile_url || f.image_pc_url) : (f.image_pc_url || f.image_mobile_url);
+    if (url) imgs.push({ url: url, nav: f.nav_text_color === 'black' ? 'black' : 'white' });
+  });
+  if (!imgs.length) return;
+  var N = imgs.length;
+
+  function slide(x) { return '<div class="flyer-slide"><img src="' + _esc(x.url) + '" alt="" draggable="false"></div>'; }
+  // Track con clones a los extremos → loop infinito con empuje (estilo PowerPoint)
+  var track = slide(imgs[N - 1]);
+  imgs.forEach(function (x) { track += slide(x); });
+  track += slide(imgs[0]);
+
+  var arrows = N > 1
+    ? '<div class="flyer-arrow left" data-dir="-1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div>'
+      + '<div class="flyer-arrow right" data-dir="1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></div>'
+    : '';
+  var dots = '';
+  if (N > 1) { dots = '<div class="flyer-dots">'; for (var i = 0; i < N; i++) dots += '<span class="flyer-dot"></span>'; dots += '</div>'; }
+
   var stage = document.createElement('div');
   stage.className = 'flyer-stage';
-  var html = '', dots = '<div class="flyer-dots">';
-  flyers.forEach(function (f, i) {
-    var url = isMob ? (f.image_mobile_url || f.image_pc_url) : (f.image_pc_url || f.image_mobile_url);
-    if (!url) return;
-    html += '<div class="flyer-slide' + (i === 0 ? ' active' : '') + '"><img src="' + _esc(url) + '" alt="" draggable="false"></div>';
-    dots += '<span class="flyer-dot' + (i === 0 ? ' active' : '') + '"></span>';
-  });
-  dots += '</div>';
-  stage.innerHTML = html + (flyers.length > 1 ? dots : '');
+  stage.innerHTML = '<div class="flyer-track">' + track + '</div>' + arrows + dots;
   sec.appendChild(stage);
-  var slides = stage.querySelectorAll('.flyer-slide');
+
+  var trk = stage.querySelector('.flyer-track');
   var dotsEls = stage.querySelectorAll('.flyer-dot');
-  if (slides.length > 1) {
-    var idx = 0;
-    _flyerTimer = setInterval(function () {
-      slides[idx].classList.remove('active'); if (dotsEls[idx]) dotsEls[idx].classList.remove('active');
-      idx = (idx + 1) % slides.length;
-      slides[idx].classList.add('active'); if (dotsEls[idx]) dotsEls[idx].classList.add('active');
-    }, 4500);
+  var pos = 1, animating = false;
+
+  function realIdx() { return ((pos - 1) % N + N) % N; }
+  function place(anim) { trk.classList.toggle('anim', !!anim); trk.style.transform = 'translateX(' + (-pos * 100) + '%)'; }
+  function ui() {
+    var r = realIdx();
+    dotsEls.forEach(function (d, k) { d.classList.toggle('active', k === r); });
+    _flyerNavColor = imgs[r].nav;
   }
+  place(false); ui();
+
+  function go(dir) {
+    if (animating || N < 2) return;
+    animating = true; pos += dir; place(true); ui();
+  }
+  trk.addEventListener('transitionend', function () {
+    animating = false;
+    if (pos > N) { pos = 1; place(false); }
+    else if (pos < 1) { pos = N; place(false); }
+    ui();
+  });
+
+  function resetAuto() {
+    if (_flyerTimer) clearInterval(_flyerTimer);
+    if (N > 1) _flyerTimer = setInterval(function () { go(1); }, 10000);
+  }
+  resetAuto();
+
+  stage.querySelectorAll('.flyer-arrow').forEach(function (a) {
+    a.addEventListener('click', function () { go(parseInt(a.dataset.dir, 10)); resetAuto(); });
+  });
+
+  // swipe (celu) + drag (mouse)
+  var sx = 0, dragging = false;
+  function ds(x) { sx = x; dragging = true; }
+  function de(x) { if (!dragging) return; dragging = false; var dx = x - sx; if (Math.abs(dx) > 45) { go(dx < 0 ? 1 : -1); resetAuto(); } }
+  stage.addEventListener('touchstart', function (e) { ds(e.touches[0].clientX); }, { passive: true });
+  stage.addEventListener('touchend', function (e) { de(e.changedTouches[0].clientX); }, { passive: true });
+  stage.addEventListener('mousedown', function (e) { ds(e.clientX); });
+  stage.addEventListener('mouseup', function (e) { de(e.clientX); });
 }
 
 async function _hydrateFeatured() {
@@ -274,7 +323,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-21';
+var BUILD = '2026-06-13-22';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -491,15 +540,23 @@ window.scrollTo(0, 0);
     if (!_catOpen && !_ventajasOpen) {
       var _nr = _nav.getBoundingClientRect();
       var _navMid = _nr.top + _nr.height / 2;
-      var _whiteSecs = [
-        document.querySelector('.envio-section'),
-        document.querySelector('.beneficios-section')
-      ];
-      for (var _wi = 0; _wi < _whiteSecs.length; _wi++) {
-        var _ws = _whiteSecs[_wi];
-        if (!_ws) continue;
-        var _wr = _ws.getBoundingClientRect();
-        if (_wr.top <= _navMid && _wr.bottom > _navMid) { _white = true; break; }
+      // Modo flyers: el color del menú lo decide el flyer activo (blanco/negro)
+      var _prodF = document.querySelector('.productos-section.flyers-mode');
+      var _overProd = false;
+      if (_prodF) { var _pfr = _prodF.getBoundingClientRect(); _overProd = _pfr.top <= _navMid && _pfr.bottom > _navMid; }
+      if (_overProd && _flyerNavColor) {
+        _white = (_flyerNavColor === 'white');
+      } else {
+        var _whiteSecs = [
+          document.querySelector('.envio-section'),
+          document.querySelector('.beneficios-section')
+        ];
+        for (var _wi = 0; _wi < _whiteSecs.length; _wi++) {
+          var _ws = _whiteSecs[_wi];
+          if (!_ws) continue;
+          var _wr = _ws.getBoundingClientRect();
+          if (_wr.top <= _navMid && _wr.bottom > _navMid) { _white = true; break; }
+        }
       }
     }
     _nav.querySelectorAll('.nav-links a').forEach(function (a) { a.style.color = _white ? '#fff' : ''; });

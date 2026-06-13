@@ -14,8 +14,11 @@ create table if not exists campaign_flyers (
   position         int  not null,
   image_pc_url     text,
   image_mobile_url text,
+  nav_text_color   text not null default 'white',   -- 'white' | 'black' (color del menú sobre este flyer)
   unique (campaign_id, position)
 );
+-- Por si ya existía la tabla sin la columna:
+alter table campaign_flyers add column if not exists nav_text_color text not null default 'white';
 
 alter table campaign_flyers enable row level security;
 drop policy if exists "public_read" on campaign_flyers;
