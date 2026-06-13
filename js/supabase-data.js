@@ -57,18 +57,23 @@ export async function loadCatalog() {
       };
     });
 
-    const features = {};
+    // Dedupe defensivo: si quedaron filas duplicadas en la base (seed corrido
+    // dos veces), igual mostramos cada cosa una sola vez.
+    const features = {}, _fseen = {};
     (featRes.data || []).forEach(function (f) {
+      var k = f.feature_key + '|' + f.text; if (_fseen[k]) return; _fseen[k] = 1;
       (features[f.feature_key] = features[f.feature_key] || []).push(f.text);
     });
 
-    const images = {};
+    const images = {}, _iseen = {};
     (imgRes.data || []).forEach(function (im) {
+      var k = im.feature_key + '|' + im.image_url; if (_iseen[k]) return; _iseen[k] = 1;
       (images[im.feature_key] = images[im.feature_key] || []).push(im.image_url);
     });
 
-    const colors = {};
+    const colors = {}, _cseen = {};
     (colRes.data || []).forEach(function (c) {
+      var k = c.feature_key + '|' + c.name; if (_cseen[k]) return; _cseen[k] = 1;
       (colors[c.feature_key] = colors[c.feature_key] || []).push({
         name: c.name, hex: c.hex, img: c.img_url, swatch: c.swatch_url, thumb: c.thumb_url
       });

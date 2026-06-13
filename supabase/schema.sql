@@ -87,6 +87,11 @@ create table if not exists catalog_color_variants (
   sort_order  int default 0
 );
 
+-- Índices únicos: impiden duplicados en las tablas hijas (re-seed seguro).
+create unique index if not exists uq_features on catalog_features (feature_key, text);
+create unique index if not exists uq_images   on catalog_images   (feature_key, image_url);
+create unique index if not exists uq_colors   on catalog_color_variants (feature_key, name);
+
 -- ════════════════════════════════════════════════════════════════════════════
 --  ROW LEVEL SECURITY  → lectura pública, escritura solo logueado
 -- ════════════════════════════════════════════════════════════════════════════

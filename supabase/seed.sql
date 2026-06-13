@@ -134,7 +134,8 @@ insert into catalog_features (feature_key, text, sort_order) values
   ('correa-sport-2', 'Elástica y liviana', 0),
   ('correa-sport-2', 'Diseño perforado', 1),
   ('correa-sport-2', 'Fragmentos de colores aleatorios', 2),
-  ('correa-sport-2', 'Compatible Apple Watch', 3);
+  ('correa-sport-2', 'Compatible Apple Watch', 3)
+on conflict (feature_key, text) do nothing;
 
 insert into catalog_images (feature_key, image_url, sort_order) values
   ('airpods-pro-2', './images/airpods-pro-2.webp', 0),
@@ -163,7 +164,8 @@ insert into catalog_images (feature_key, image_url, sort_order) values
   ('cargador-35w', './images/cargador-tipo-c.webp', 0),
   ('cargador-35w', './images/cargador-tipo-c-completo-v2.webp', 1),
   ('bateria-magsafe', './images/bateria-magsafe.webp', 0),
-  ('bateria-magsafe', './images/bateria-magsafe-v2.webp', 1);
+  ('bateria-magsafe', './images/bateria-magsafe-v2.webp', 1)
+on conflict (feature_key, image_url) do nothing;
 
 insert into catalog_color_variants (feature_key, name, hex, img_url, swatch_url, thumb_url, sort_order) values
   ('max-1-1', 'Midnight', '#1A1A1A', './images/max-negros.webp', './images/black.png', './images/miblack.webp', 0),
@@ -188,4 +190,5 @@ insert into catalog_color_variants (feature_key, name, hex, img_url, swatch_url,
   ('correa-sport-2', 'Negra', '#1A1A1A', './images/cosport3black.webp', './images/mblack.webp', './images/mblack.webp', 1),
   ('correa-sport-2', 'N-Verde', '#4CAF50', './images/cosport2nverde.webp', './images/mverde.webp', './images/mverde.webp', 2),
   ('correa-sport-2', 'Rosa', '#F4A7B9', './images/cosport2rosa.webp', './images/mrosa.webp', './images/mrosa.webp', 3),
-  ('correa-sport-2', 'Caqui', '#8B7355', './images/cosport2caqui.webp', './images/mcaqui.webp', './images/mcaqui.webp', 4);
+  ('correa-sport-2', 'Caqui', '#8B7355', './images/cosport2caqui.webp', './images/mcaqui.webp', './images/mcaqui.webp', 4)
+on conflict (feature_key, name) do nothing;
