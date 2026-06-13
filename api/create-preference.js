@@ -26,6 +26,12 @@ module.exports = async (req, res) => {
 
     const preference = new Preference(client);
 
+    // FRONTEND_URL sin barra final, y validamos que sea https (MP lo exige para
+    // back_urls + auto_return). Si falta o es inválida, omitimos esos campos para
+    // que la preferencia se cree igual (no rompe el pago).
+    const FU = (process.env.FRONTEND_URL || '').trim().replace(/\/+$/, '');
+    const validFU = /^https:\/\//.test(FU);
+
     const body = {
       items: items.map(i => ({
         title: i.name,
@@ -38,21 +44,24 @@ module.exports = async (req, res) => {
         email: customer.email,
         phone: { number: customer.phone },
       },
-      back_urls: {
-        success: `${process.env.FRONTEND_URL}/success`,
-        failure: `${process.env.FRONTEND_URL}/cancel`,
-        pending: `${process.env.FRONTEND_URL}/cancel`,
-      },
-      notification_url: `${process.env.FRONTEND_URL}/api/webhook`,
       external_reference: JSON.stringify({
         customer,
         items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
         total,
       }),
-      auto_return: 'approved',
       // Sin 'purpose: wallet_purchase' → permite pagar como INVITADO (con tarjeta,
       // sin cuenta de MercadoPago) además de con cuenta.
     };
+
+    if (validFU) {
+      body.back_urls = {
+        success: `${FU}/success`,
+        failure: `${FU}/cancel`,
+        pending: `${FU}/cancel`,
+      };
+      body.notification_url = `${FU}/api/webhook`;
+      body.auto_return = 'approved';   // requiere back_urls.success válido
+    }
 
     const result = await preference.create({ body });
 
@@ -70,6 +79,9 @@ module.exports = async (req, res) => {
     res.json({ init_point: result.init_point, id: result.id });
   } catch (err) {
     console.error('create-preference error:', err);
-    res.status(500).json({ error: 'Error al crear preferencia' });
+    const detail =
+      (err && err.cause && err.cause[0] && (err.cause[0].description || err.cause[0].message)) ||
+      (err && err.message) || 'unknown';
+    res.status(500).json({ error: 'Error al crear preferencia', detail: String(detail), hasToken: !!process.env.MERCADO_PAGO_ACCESS_TOKEN, hasFrontendUrl: !!process.env.FRONTEND_URL });
   }
 };
