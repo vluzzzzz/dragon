@@ -2077,6 +2077,7 @@ body {
 .logo3d-wrap {
   --logo3d-x: 0px;
   --logo3d-y: 6px;
+  --logo3d-scale: 1;
   width: 100%;
   max-width: 600px;
   height: 420px;
@@ -2149,12 +2150,8 @@ body {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  background-color: #f3f5f8;
-  background-image:
-    linear-gradient(rgba(13,59,82,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(13,59,82,.045) 1px, transparent 1px);
-  background-size: 40px 40px;
-  padding: 96px 40px 0;
+  background: #0a0a0b;
+  padding: 96px 40px;
 }
 .contacto-dune-inner {
   width: 100%;
@@ -2172,7 +2169,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #8a97a3;
+  color: rgba(255,255,255,.5);
   margin-bottom: 6px;
 }
 .contacto-dune-title {
@@ -2180,7 +2177,7 @@ body {
   font-size: clamp(48px, 8vw, 84px);
   letter-spacing: 0;
   line-height: 0.95;
-  color: #14202b;
+  color: #fff;
 }
 .contacto-dune-grid {
   display: grid;
@@ -2197,17 +2194,16 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #fff;
-  border: 1px solid rgba(13,59,82,.07);
+  background: #161619;
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: 18px;
   padding: 20px 22px;
-  box-shadow: 0 10px 30px rgba(13,59,82,.06);
 }
 .contacto-dune-icon {
   width: 46px;
   height: 46px;
   flex-shrink: 0;
-  background: #14202b;
+  background: #fff;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -2216,23 +2212,23 @@ body {
 .contacto-dune-icon svg {
   width: 20px;
   height: 20px;
-  fill: #fff;
+  fill: #111;
 }
 .contacto-dune-label {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #9aa6b1;
+  color: rgba(255,255,255,.45);
   margin-bottom: 3px;
 }
 .contacto-dune-value {
   font-size: 16px;
   font-weight: 600;
-  color: #14202b;
+  color: #fff;
 }
 .contacto-dune-cta {
-  background: #14202b;
+  background: #fff;
   border-radius: 22px;
   padding: 40px 38px;
   display: flex;
@@ -2242,13 +2238,13 @@ body {
 .contacto-dune-cta-title {
   font-size: clamp(22px, 2.4vw, 28px);
   font-weight: 700;
-  color: #fff;
+  color: #14202b;
   line-height: 1.2;
   margin-bottom: 12px;
 }
 .contacto-dune-cta-text {
   font-size: 15px;
-  color: rgba(255,255,255,.66);
+  color: #6e6e73;
   line-height: 1.55;
   margin-bottom: 26px;
 }
@@ -2287,17 +2283,16 @@ body {
 .footer-dune {
   position: relative;
   z-index: 1;
-  margin-top: 60px;
-  padding: 28px 0 30px;
-  border-top: 1px solid rgba(13,59,82,.1);
+  background: #f4f5f7;
+  padding: 40px 20px 36px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 15px;
 }
 .footer-dune-brand {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
+  font-size: 26px;
   letter-spacing: 0.04em;
   color: #14202b;
 }
@@ -2333,12 +2328,11 @@ body {
   .signpost-card[data-key="atencion"] { --x: 90px;  --y: 480px; --w: 175px; --r: 3deg; }
   .catalogo-cta-wrap { padding: 0 16px 24px; }
   .catalogo-cta-btn { font-size: 18px; padding: 12px 28px; }
-  .contacto-section-dune { padding: 84px 16px 0; background-size: 30px 30px; }
+  .contacto-section-dune { padding: 84px 16px; }
   .contacto-dune-header { margin-bottom: 30px; }
   .contacto-dune-grid { grid-template-columns: 1fr; gap: 16px; }
   .contacto-dune-cta { padding: 30px 24px; }
   .contacto-dune-wa-btn { align-self: stretch; justify-content: center; }
-  .footer-dune { margin-top: 40px; }
   .footer-dune-nav { gap: 18px; }
 }
 

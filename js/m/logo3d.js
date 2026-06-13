@@ -78,7 +78,8 @@ export function initLogo3D() {
 
     var size = box.getSize(new THREE.Vector3());
     var maxDim = Math.max(size.x, size.y, size.z);
-    var logoBaseScale = 4.0 / maxDim;
+    // 3.5 (antes 4.0) deja margen para que no se corten los cuernos al girar.
+    var logoBaseScale = 3.5 / maxDim;
     model.scale.setScalar(logoBaseScale);
 
     logoGroup.add(model);
@@ -137,6 +138,10 @@ export function initLogo3D() {
     requestAnimationFrame(animate);
 
     if (!_visible) return;
+
+    // Escala controlable desde el panel (?dev) vía la var --logo3d-scale del wrap.
+    var _us = parseFloat(wrap.style.getPropertyValue('--logo3d-scale'));
+    logoGroup.scale.setScalar(_us > 0 ? _us : 1);
 
     smoothRotY += (windX * LOGO_ROT_Y - smoothRotY) * 0.12;
     smoothRotX += (-windY * LOGO_ROT_X - smoothRotX) * 0.12;

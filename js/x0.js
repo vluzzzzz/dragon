@@ -346,10 +346,11 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-25';
+var BUILD = '2026-06-13-26';
 
 (function _debugBar() {
-  if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
+  // Solo con ?debug en la URL (ya no aparece sola en celular).
+  if ((location.search + location.hash).indexOf('debug') === -1) return;
   var bar = document.createElement('div');
   bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;'
     + 'background:rgba(0,0,0,.85);color:#4ade80;font:11px/1.4 monospace;'
@@ -561,7 +562,9 @@ window.scrollTo(0, 0);
   var _nav = document.getElementById('mainNav');
   if (_nav) {
     var _white = false;
-    if (!_catOpen && !_ventajasOpen) {
+    // OJO: NO gateamos por _ventajasOpen — beneficios y contacto VIVEN dentro del
+    // reveal de ventajas (belowFold), así que ahí el nav también debe ser blanco.
+    if (!_catOpen) {
       var _nr = _nav.getBoundingClientRect();
       var _navMid = _nr.top + _nr.height / 2;
       // Modo flyers: el color del menú lo decide el flyer activo (blanco/negro)
@@ -573,7 +576,8 @@ window.scrollTo(0, 0);
       } else {
         var _whiteSecs = [
           document.querySelector('.envio-section'),
-          document.querySelector('.beneficios-section')
+          document.querySelector('.beneficios-section'),
+          document.querySelector('.contacto-section-dune')
         ];
         for (var _wi = 0; _wi < _whiteSecs.length; _wi++) {
           var _ws = _whiteSecs[_wi];

@@ -8,91 +8,35 @@ export function initDevControls() {
 
   var ROOT = document.documentElement;
 
-  var GROUPS = [
-    { title: 'Ojos', sel: null, vars: [
-      { v: '--ojos-x', label: 'X', unit: 'px', min: -150, max: 150, step: 1 },
-      { v: '--ojos-y', label: 'Y', unit: 'px', min: -150, max: 150, step: 1 },
-      { v: '--ojos-w', label: 'Ancho', unit: '', min: 1, max: 60, step: 0.5 },
-      { v: '--ojos-h', label: 'Alto', unit: '', min: 1, max: 60, step: 0.5 }
-    ]},
-    { title: 'Nubes', sel: null, vars: [
-      { v: '--nubes-y', label: 'Y', unit: 'px', min: -300, max: 600, step: 1 },
-      { v: '--nubes-h', label: 'Alto', unit: '%', min: 0, max: 80, step: 0.5 },
-      { v: '--nubes-scale', label: 'Escala', unit: '', min: 0.2, max: 5, step: 0.05 }
-    ]},
-    { title: 'Rueda Izq', sel: null, vars: [
-      { v: '--ri-x', label: 'X', unit: 'px', min: -150, max: 250, step: 0.5 },
-      { v: '--ri-y', label: 'Y', unit: '%', min: -60, max: 60, step: 0.5 },
-      { v: '--ri-s', label: 'Tamano', unit: 'px', min: 2, max: 140, step: 1 }
-    ]},
-    { title: 'Rueda Der', sel: null, vars: [
-      { v: '--rd-x', label: 'X', unit: 'px', min: -150, max: 250, step: 0.5 },
-      { v: '--rd-y', label: 'Y', unit: 'px', min: -150, max: 150, step: 0.5 },
-      { v: '--rd-s', label: 'Tamano', unit: 'px', min: 2, max: 140, step: 1 }
-    ]},
-    { title: 'Carro', sel: null, vars: [
-      { v: '--carro-y', label: 'Y', unit: 'px', min: -150, max: 500, step: 1 },
-      { v: '--carro-scale', label: 'Escala', unit: '', min: 0.5, max: 8, step: 0.05 }
-    ]},
-    { title: 'Texto: Envios', sel: '.envio-item-logo', vars: [
-      { v: '--logo-w', label: 'Ancho', unit: 'px', min: 50, max: 1400, step: 5 },
-      { v: '--logo-x', label: 'X', unit: 'px', min: -800, max: 800, step: 2 },
-      { v: '--logo-y', label: 'Y', unit: 'px', min: -800, max: 800, step: 2 }
-    ]},
-    { title: 'Texto: Calidad', sel: '.envio-item-img', vars: [
-      { v: '--img2-w', label: 'Ancho', unit: 'px', min: 50, max: 1400, step: 5 },
-      { v: '--img2-x', label: 'X', unit: 'px', min: -800, max: 800, step: 2 },
-      { v: '--img2-y', label: 'Y', unit: 'px', min: -800, max: 800, step: 2 }
-    ]},
-    { title: 'Texto: Catalogo', sel: '.envio-item-catalogo', vars: [
-      { v: '--cat-w', label: 'Ancho', unit: 'px', min: 50, max: 1500, step: 5 },
-      { v: '--cat-x', label: 'X', unit: 'px', min: -800, max: 800, step: 2 },
-      { v: '--cat-y', label: 'Y', unit: 'px', min: -800, max: 800, step: 2 }
-    ]},
-    { title: 'Boton VER', sel: '.envio-item-catalogo', vars: [
-      { v: '--btn-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--btn-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--btn-scale', label: 'Escala', unit: '', min: 0.4, max: 3, step: 0.05 },
-      { v: '--btn-w', label: 'Ancho', unit: 'px', min: 60, max: 400, step: 5 }
-    ]},
-    { title: 'Elegir: Fondo', sel: '.beneficios-section', vars: [
-      { v: '--fondo-y', label: 'Y', unit: 'px', min: -600, max: 600, step: 2 },
-      { v: '--fondo-zoom', label: 'Zoom', unit: '%', min: 40, max: 260, step: 1 }
-    ]},
-    { title: 'Elegir: Logo 3D', sel: '.logo3d-wrap', vars: [
-      { v: '--logo3d-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--logo3d-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 }
-    ]},
-    { title: 'Elegir: Tubo', sel: '.signpost-tubo', vars: [
-      { v: '--tubo-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--tubo-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--tubo-h', label: 'Alto', unit: 'px', min: 200, max: 1000, step: 5 }
-    ]},
-    { title: 'Elegir: Sena Precios', sel: '.signpost-card[data-key="precio"]', vars: [
+  // PC: solo Logo 3D + Tubo. Celular: además Fondo + las 4 señas (carteles).
+  var _isMobPanel = window.innerWidth <= 768;
+
+  var _logoG = { title: 'Logo 3D', sel: '.logo3d-wrap', vars: [
+    { v: '--logo3d-scale', label: 'Tamaño', unit: '', min: 0.3, max: 2.5, step: 0.02 },
+    { v: '--logo3d-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+    { v: '--logo3d-y', label: 'Y', unit: 'px', min: -400, max: 400, step: 2 }
+  ]};
+  var _tuboG = { title: 'Tubo', sel: '.signpost-tubo', vars: [
+    { v: '--tubo-x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
+    { v: '--tubo-y', label: 'Y (subir = estirar ↑)', unit: 'px', min: -900, max: 400, step: 2 },
+    { v: '--tubo-h', label: 'Alto', unit: 'px', min: 200, max: 1800, step: 5 }
+  ]};
+  var _fondoG = { title: 'Fondo', sel: '.beneficios-section', vars: [
+    { v: '--fondo-y', label: 'Y', unit: 'px', min: -600, max: 600, step: 2 },
+    { v: '--fondo-zoom', label: 'Zoom', unit: '%', min: 40, max: 260, step: 1 }
+  ]};
+  function _senaG(name, key) {
+    return { title: 'Seña ' + name, sel: '.signpost-card[data-key="' + key + '"]', vars: [
       { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
+      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 1200, step: 2 },
       { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
       { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
-    ]},
-    { title: 'Elegir: Sena Envio', sel: '.signpost-card[data-key="envio"]', vars: [
-      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
-      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
-      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
-    ]},
-    { title: 'Elegir: Sena Stock', sel: '.signpost-card[data-key="stock"]', vars: [
-      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
-      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
-      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
-    ]},
-    { title: 'Elegir: Sena Atencion', sel: '.signpost-card[data-key="atencion"]', vars: [
-      { v: '--x', label: 'X', unit: 'px', min: -400, max: 400, step: 2 },
-      { v: '--y', label: 'Y', unit: 'px', min: -200, max: 800, step: 2 },
-      { v: '--w', label: 'Ancho', unit: 'px', min: 80, max: 460, step: 2 },
-      { v: '--r', label: 'Rotacion', unit: 'deg', min: -25, max: 25, step: 0.5 }
-    ]}
-  ];
+    ]};
+  }
+
+  var GROUPS = _isMobPanel
+    ? [_logoG, _tuboG, _fondoG, _senaG('Precios', 'precio'), _senaG('Envio', 'envio'), _senaG('Stock', 'stock'), _senaG('Atencion', 'atencion')]
+    : [_logoG, _tuboG];
 
   function targetEl(g) { return g.sel ? document.querySelector(g.sel) : ROOT; }
   function readVal(g, vr) {
