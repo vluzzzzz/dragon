@@ -171,7 +171,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-12-15';
+var BUILD = '2026-06-12-16';
 
 (function _debugBar() {
   if (window.innerWidth > 768 && (location.search + location.hash).indexOf('debug') === -1) return;
@@ -386,12 +386,17 @@ window.scrollTo(0, 0);
   if (_nav) {
     var _white = false;
     if (!_catOpen && !_ventajasOpen) {
-      var _env = document.querySelector('.envio-section');
-      if (_env) {
-        var _nr = _nav.getBoundingClientRect();
-        var _navMid = _nr.top + _nr.height / 2;
-        var _er = _env.getBoundingClientRect();
-        _white = _er.top <= _navMid && _er.bottom > _navMid;
+      var _nr = _nav.getBoundingClientRect();
+      var _navMid = _nr.top + _nr.height / 2;
+      var _whiteSecs = [
+        document.querySelector('.envio-section'),
+        document.querySelector('.beneficios-section')
+      ];
+      for (var _wi = 0; _wi < _whiteSecs.length; _wi++) {
+        var _ws = _whiteSecs[_wi];
+        if (!_ws) continue;
+        var _wr = _ws.getBoundingClientRect();
+        if (_wr.top <= _navMid && _wr.bottom > _navMid) { _white = true; break; }
       }
     }
     _nav.querySelectorAll('.nav-links a').forEach(function (a) { a.style.color = _white ? '#fff' : ''; });

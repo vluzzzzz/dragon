@@ -222,14 +222,13 @@ nav.no-glass {
 
 .nav-links a {
   text-decoration: none;
-  color: #fff;
+  color: #444;
   font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  font-weight: 500;
   transition: color 0.25s ease;
 }
 
-.nav-links a:hover { color: #fff; opacity: 0.82; }
+.nav-links a:hover { color: #111; }
 
 .nav-cart-btn {
   position: absolute;
@@ -251,12 +250,11 @@ nav.no-glass {
 .nav-cart-btn svg {
   width: 20px;
   height: 20px;
-  color: #fff;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35));
+  color: #444;
   transition: color 0.25s ease;
 }
 
-.nav-cart-btn:hover svg { color: #fff; opacity: 0.82; }
+.nav-cart-btn:hover svg { color: #111; }
 
 .cart-count {
   position: absolute;
@@ -1966,7 +1964,7 @@ nav.no-glass {
 }
 
 .beneficios-section {
-  --fondo-y: 0px;
+  --fondo-y: -600px;
   --fondo-zoom: 100%;
   position: relative;
   z-index: 1;
@@ -2011,14 +2009,14 @@ nav.no-glass {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 800px;
+  max-width: 860px;
   margin: 0 auto;
-  height: var(--sp-h, 640px);
+  height: var(--sp-h, 1120px);
 }
 .signpost-tubo {
   --tubo-x: 0px;
-  --tubo-y: 0px;
-  --tubo-h: 600px;
+  --tubo-y: -202px;
+  --tubo-h: 1260px;
   position: absolute;
   left: 50%; top: var(--tubo-y, 0px);
   height: var(--tubo-h, 600px);
@@ -2038,10 +2036,10 @@ nav.no-glass {
   filter: drop-shadow(0 10px 18px rgba(13,59,82,.28));
   -webkit-user-drag: none;
 }
-.signpost-card[data-key="precio"]   { --x: -150px; --y: 30px;  --w: 240px; --r: -3deg; }
-.signpost-card[data-key="envio"]    { --x: 155px;  --y: 180px; --w: 240px; --r: 3deg; }
-.signpost-card[data-key="stock"]    { --x: -150px; --y: 330px; --w: 240px; --r: -3deg; }
-.signpost-card[data-key="atencion"] { --x: 155px;  --y: 480px; --w: 240px; --r: 3deg; }
+.signpost-card[data-key="precio"]   { --x: -122px; --y: 110px; --w: 390px; --r: -3deg; }
+.signpost-card[data-key="envio"]    { --x: 92px;  --y: 364px; --w: 400px; --r: 3deg; }
+.signpost-card[data-key="stock"]    { --x: -122px; --y: 618px; --w: 390px; --r: -3deg; }
+.signpost-card[data-key="atencion"] { --x: 92px;  --y: 872px; --w: 400px; --r: 3deg; }
 
 .contacto-section-dune {
   position: relative;
@@ -2150,13 +2148,13 @@ nav.no-glass {
 @media (max-width: 768px) {
   .beneficios-header { padding-top: 48px; }
   .logo3d-wrap { max-width: 100%; height: 280px; }
-  .beneficios-section { --fondo-y: -600px; --fondo-zoom: 100%; }
-  .signpost { --sp-h: 880px; max-width: 100%; }
-  .signpost-tubo { --tubo-x: 0px; --tubo-y: -202px; --tubo-h: 915px; }
-  .signpost-card[data-key="precio"]   { --x: -122px; --y: 110px; --w: 390px; --r: -3deg; }
-  .signpost-card[data-key="envio"]    { --x: 92px;  --y: 364px; --w: 400px; --r: 3deg; }
-  .signpost-card[data-key="stock"]    { --x: -88px; --y: 600px; --w: 175px; }
-  .signpost-card[data-key="atencion"] { --x: 90px;  --y: 740px; --w: 175px; }
+  .beneficios-section { --fondo-y: 0px; background-size: cover; }
+  .signpost { --sp-h: 760px; max-width: 100%; }
+  .signpost-tubo { --tubo-y: 0px; --tubo-h: 620px; }
+  .signpost-card[data-key="precio"]   { --x: -88px; --y: 30px;  --w: 175px; --r: -3deg; }
+  .signpost-card[data-key="envio"]    { --x: 90px;  --y: 180px; --w: 175px; --r: 3deg; }
+  .signpost-card[data-key="stock"]    { --x: -88px; --y: 330px; --w: 175px; --r: -3deg; }
+  .signpost-card[data-key="atencion"] { --x: 90px;  --y: 480px; --w: 175px; --r: 3deg; }
   .catalogo-cta-wrap { padding: 0 16px 24px; }
   .catalogo-cta-btn { font-size: 18px; padding: 12px 28px; }
   .contacto-section-dune { padding: 72px 16px; }
