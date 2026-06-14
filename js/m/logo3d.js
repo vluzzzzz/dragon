@@ -27,7 +27,9 @@ export function initLogo3D() {
 
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
-  camera.position.set(0, 0, 8);
+  // En PC el logo va más grande (scale ~1.32), así que alejamos la cámara para
+  // que no se corte al girar. En celular se queda cerca.
+  camera.position.set(0, 0, _isMob ? 8 : 9.6);
   camera.lookAt(0, 0, 0);
 
   var ambient = new THREE.AmbientLight(0xffffff, 2.5);
@@ -134,14 +136,19 @@ export function initLogo3D() {
     window.addEventListener('touchend', function () { _lastTY = null; });
   }
 
+  var _scaleTick = 0, _scaleCache = 1;
   function animate() {
     requestAnimationFrame(animate);
 
     if (!_visible) return;
 
-    // Escala controlable desde el panel (?dev) vía la var --logo3d-scale del wrap.
-    var _us = parseFloat(wrap.style.getPropertyValue('--logo3d-scale'));
-    logoGroup.scale.setScalar(_us > 0 ? _us : 1);
+    // Escala desde la var --logo3d-scale (CSS o panel ?dev). Leída con computed
+    // cada ~12 frames para no recalcular estilos en cada cuadro.
+    if ((_scaleTick++ % 12) === 0) {
+      var _sv = parseFloat(getComputedStyle(wrap).getPropertyValue('--logo3d-scale'));
+      _scaleCache = _sv > 0 ? _sv : 1;
+    }
+    logoGroup.scale.setScalar(_scaleCache);
 
     smoothRotY += (windX * LOGO_ROT_Y - smoothRotY) * 0.12;
     smoothRotX += (-windY * LOGO_ROT_X - smoothRotX) * 0.12;
