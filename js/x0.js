@@ -346,7 +346,7 @@ var SnapNav = (function () {
 })();
 window.__SnapNav = SnapNav;
 
-var BUILD = '2026-06-13-27';
+var BUILD = '2026-06-13-28';
 
 (function _debugBar() {
   // Solo con ?debug en la URL (ya no aparece sola en celular).

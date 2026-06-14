@@ -23,7 +23,13 @@ export function initDevControls() {
   ]};
   var _fondoG = { title: 'Fondo', sel: '.beneficios-section', vars: [
     { v: '--fondo-y', label: 'Y', unit: 'px', min: -600, max: 600, step: 2 },
-    { v: '--fondo-zoom', label: 'Zoom', unit: '%', min: 40, max: 260, step: 1 }
+    { v: '--fondo-zoom', label: 'Zoom', unit: '%', min: 40, max: 400, step: 1 }
+  ]};
+  var _tituloG = { title: 'Título (bajar)', sel: '.beneficios-header', vars: [
+    { v: '--head-top', label: 'Bajar', unit: 'px', min: 0, max: 320, step: 2 }
+  ]};
+  var _seccionG = { title: 'Sección (piso del tubo)', sel: '.signpost', vars: [
+    { v: '--sp-h', label: 'Alto', unit: 'px', min: 400, max: 1500, step: 5 }
   ]};
   function _senaG(name, key) {
     return { title: 'Seña ' + name, sel: '.signpost-card[data-key="' + key + '"]', vars: [
@@ -35,7 +41,7 @@ export function initDevControls() {
   }
 
   var GROUPS = _isMobPanel
-    ? [_logoG, _tuboG, _fondoG, _senaG('Precios', 'precio'), _senaG('Envio', 'envio'), _senaG('Stock', 'stock'), _senaG('Atencion', 'atencion')]
+    ? [_logoG, _tuboG, _tituloG, _seccionG, _fondoG, _senaG('Precios', 'precio'), _senaG('Envio', 'envio'), _senaG('Stock', 'stock'), _senaG('Atencion', 'atencion')]
     : [_logoG, _tuboG];
 
   function targetEl(g) { return g.sel ? document.querySelector(g.sel) : ROOT; }

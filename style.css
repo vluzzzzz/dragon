@@ -2070,7 +2070,7 @@ body {
   text-align: center;
   position: relative;
   z-index: 3;
-  padding-top: 64px;
+  padding-top: var(--head-top, 64px);
 }
 .beneficios-header .productos-subtitulo { color: #fff; text-shadow: 0 2px 8px rgba(11, 59, 82, 0.35); }
 .beneficios-header .productos-titulo { color: #fff; text-shadow: 0 3px 14px rgba(11, 59, 82, 0.45); }
@@ -2317,10 +2317,10 @@ body {
 }
 
 @media (max-width: 768px) {
-  .beneficios-header { padding-top: 48px; }
-  .logo3d-wrap { max-width: 100%; height: 280px; --logo3d-scale: 0.78; --logo3d-x: 0px; --logo3d-y: 6px; }
+  .beneficios-header { --head-top: 96px; }
+  .logo3d-wrap { max-width: 100%; height: 300px; --logo3d-scale: 0.95; --logo3d-x: 0px; --logo3d-y: 6px; }
   .beneficios-section { --fondo-y: 0px; --fondo-zoom: 260%; }
-  .signpost { --sp-h: 900px; max-width: 100%; }
+  .signpost { --sp-h: 760px; max-width: 100%; }
   .signpost-tubo { --tubo-x: 0px; --tubo-y: -86px; --tubo-h: 925px; }
   .signpost-card[data-key="precio"]   { --x: -66px; --y: 94px;  --w: 230px; --r: -3deg; }
   .signpost-card[data-key="envio"]    { --x: 36px;  --y: 288px; --w: 274px; --r: 3deg; }
